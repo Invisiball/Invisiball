@@ -1,0 +1,78 @@
+{#
+	The MIT License (MIT)
+
+	Copyright (c) 2014 Usandfriends
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated documentation files (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+	the Software, and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+	FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+////////// INVISIBALL //////////////
+
+#}
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<title>Invisiball: The FPS With A Twist! | Leaderboard</title>
+		{% include './Bits/CssHead.html' %}
+		<link href="/Css/Leaderboard.css" rel="stylesheet">
+		{% include './Bits/JsHead.html' %}
+	</head>
+	<body>
+		{% include './Bits/Navigation.html' %}
+		<div class="container">
+			<h1>Invisi<i>leaders</i>:</h1>
+			<br>
+			{% if ThereAreNotUsers %}
+				<h3>No players yet!</h3>
+			{% else %}
+				<div id="searchdiv">
+					<input id="search" placeholder="Search Global User Database" class="form-control">
+					<button id="searchbtn" type="submit" class="btn btn-default" onclick="query($('#search').val());">Search!</button>
+				</div>
+				<br> <br>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Invisi<i>player</i></th>
+							<th>Invisi<i>kills</i></th>
+							<th>Invisi<i>deaths</i></th>
+							<th>Invisi<i>shots</i></th>
+							<th>Invisi<i>accuracy</i></th>
+							<th>Invisi<i>KDR</i></th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for User in Users %}
+							<tr>
+								<td>{{User.Place}}</td>
+								<td><a href="/user/{{User.Username}}">{{User.Username}}</a></td>
+								<td>{{User.Kills}}</td>
+								<td>{{User.Deaths}}</td>
+								<td>{{User.Shots}}</td>
+								<td>{{User.Accuracy}}%</td>
+								<td>{{User.Kdr}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+		</div>
+		<script src="/Js/Leaderboard.js"></script>
+	</body>
+</html>
