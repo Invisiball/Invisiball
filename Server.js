@@ -55,7 +55,7 @@ Object.defineProperty(App.Vars, 'Stack', {
 	get: function() {
 		var orig = Error.prepareStackTrace;
 		Error.prepareStackTrace = function(_, stack) { return stack; };
-		var err = new Error;
+		var err = new Error();
 		Error.captureStackTrace(err, arguments.callee);
 		var stack = err.stack;
 		Error.prepareStackTrace = orig;
@@ -77,7 +77,7 @@ Object.defineProperty(App.Vars, 'LineNumber', {
  */
 String.prototype.Replace = function(find, replace) {
 	return this.replace(new RegExp(find, 'g'), replace);
-}
+};
 
 /**
  * Makes a path from the string.
@@ -102,26 +102,24 @@ App.Console.Log = function(line, t) {
  */
 App.Console.Error = function(line, t) {
 	if (App.Configs.Global.IsDebugging) {
-		console.error('[' + line.toString() + '] ' + t.toString());
+		console.error(('[' + line.toString() + '] ' + t.toString()).red);
 	}
 };
 
-App.Configs.Global.IsDebugging = true; /**< Is debugging? */
-App.Vars.ResponseCodes = Object.freeze({
-  	Ok: 200, // Okay.
-	NotFound: 404, // Could not find resource.
-	IncorrectRequest: 400, // Incorrect request.
-	Conflict: 409, // Conflict.
-	Err: 500 // Internal error.
-}); /**< Response codes. */
-App.Configs.Global.PID = parseInt(Math.random() * ((10000000 + 1) - 0) + 0); /**< The PID of this server. */
-App.Vars.Rooms = {}; /**< Room data. */
-App.Configs.Global.IsMaintaining = false; /**< Is maintaining? */
+App.Console.Throw = function(line, t) {
+	var getStackTrace = function() {
+		var obj = {};
+		Error.captureStackTrace(obj, getStackTrace);
+		return obj.stack;
+	};
+
+	App.Console.Error(line, JSON.stringify(t, null, 4) + '\n' + getStackTrace().toString());
+
+	process.exit(1);
+}
 
 //========== START NODEJS VARS ==========
 
-App.Configs.Global.Address.Port = process.env.PORT || 80; /**< Port to listen to. */
-App.Configs.Global.Address.Url = 'localhost'; /**< Base URL to listen to. */
 App.Modules.Express = require('express'); /**< Express module. */
 App.Modules.PassPort = require('passport'); /**< Passport module. */
 App.Modules.SQLiteStore = require('connect-sqlite3')(App.Modules.Express); /**< SQLite3 session store. */
@@ -132,6 +130,35 @@ App.Modules.Colors = require('colors'); /**< Colors for output. */
 App.Modules.Swig = require('swig'); /**< SWIG templating. */
 // App.Modules.SwigExtras = require('swig-extras'); /**< SWIG extra filters and tags. */
 App.Modules.Cron = require('cron').CronJob; /**< CRON module. */
+App.Modules.Whirlpool = require('./Assets/Js/Utils/Whirlpool.js'); /**< Whirlpool hash function. */
+
+//========== START APP VARS & CONFIGS ==========
+
+App.Configs.Global.IsDebugging = true; /**< Is debugging? */
+App.Configs.Global.IsMaintaining = false; /**< Is maintaining? */
+
+App.Configs.Global.PID = parseInt(Math.random() * ((10000000 + 1) - 0) + 0); /**< The PID of this server. */
+
+App.Configs.Global.AdminSecret = App.Modules.Whirlpool(App.Configs.Global.PID).toString();
+
+App.Configs.Global.Address.Port = process.env.PORT || 80; /**< Port to listen to. */
+App.Configs.Global.Address.Url = 'localhost'; /**< Base URL to listen to. */
+
+App.Vars.ResponseCodes = Object.freeze({
+	Ok: 200, // Okay.
+	NotFound: 404, // Could not find resource.
+	IncorrectRequest: 400, // Incorrect request.
+	Conflict: 409, // Conflict.
+	Err: 500 // Internal error.
+}); /**< Response code constants. */
+
+App.Vars.ClientCodes = Object.freeze({
+	Twitter: 1, // Twitter client code.
+	Google: 2, // Google client code.
+	Facebook: 3 // Facebook client code.
+}); /**< Client code constants. */
+
+App.Vars.Rooms = {}; /**< Room data. */
 
 //========== START SQLITE JOBS ==========
 
@@ -140,7 +167,11 @@ App.Databases.UserDatabase = new App.Modules.SQLite3.Database('/Assets/Data/User
 
 // Create table "users".
 App.Databases.UserDatabase.serialize(function() {
-	App.Databases.UserDatabase.run('CREATE TABLE IF NOT EXISTS Users (Email TEXT DEFAULT "", Username TEXT DEFAULT "", Kills INTEGER DEFAULT 0, Deaths INTEGER DEFAULT 0, Shots INTEGER DEFAULT 0, Id TEXT DEFAULT "")');
+	App.Databases.UserDatabase.run('CREATE TABLE IF NOT EXISTS Users (Email TEXT DEFAULT "", Username TEXT DEFAULT "", Kills INTEGER DEFAULT 0, Deaths INTEGER DEFAULT 0, Shots INTEGER DEFAULT 0, Id TEXT DEFAULT "", Client INTEGER DEFAULT 0)', function(Error) {
+		if (Error) { // Error!
+			App.Console.Throw(Error);
+		}
+	});
 });
 
 //========== START MAILER SETUP ==========
@@ -169,6 +200,7 @@ App.Apps.Express.use('/Css', App.Modules.Express.static('/Assets/Css'.LocalFileP
 App.Apps.Express.use('/Js', App.Modules.Express.static('/Assets/Js'.LocalFilePath));
 App.Apps.Express.use('/Images', App.Modules.Express.static('/Assets/Images'.LocalFilePath));
 App.Apps.Express.use('/Sounds', App.Modules.Express.static('/Assets/Sounds'.LocalFilePath));
+App.Apps.Express.use('/Meshes', App.Modules.Express.static('/Assets/Meshes'.LocalFilePath));
 App.Apps.Express.use('/Maps', App.Modules.Express.static('/Assets/Maps'.LocalFilePath));
 
 // Set up 3rd-party middleware.
@@ -184,11 +216,14 @@ App.Apps.Express.use(App.Modules.PassPort.initialize());
 App.Apps.Express.use(App.Modules.PassPort.session());
 App.Apps.Express.use(App.Apps.Express.router);
 
+App.Apps.Express.enable('trust proxy');
+
 // Set up our middleware.
 App.Apps.Express.MiddleWare = Object.seal({
 	AuthenticateUser: function(Request, Response, Done) {
 		if (!Request.user) { // If no user is logged in, force login.
 			Response.redirect('/Me/Login?Error=Login First');
+			return;
 		}
 
 		Done(); // Bye bye.
@@ -196,6 +231,7 @@ App.Apps.Express.MiddleWare = Object.seal({
 	CheckForMaintenance: function(Request, Response, Done) {
 		if (App.Configs.Global.IsMaintaining) { // If is maintaining, all processes must be stopped.
 			Response.redirect('/Maintenance');
+			return;
 		}
 
 		Done(); // Bye bye.
@@ -222,7 +258,7 @@ App.Apps.SocketIO.set('authorization', App.Modules.SocketIOSessions({
 })));
 
 // Set up Socket.IO vars.
-// App.Apps.SocketIO.set('transports', ['jsonp-polling']); // Forced to do this because of https://github.com/Automattic/socket.io/issues/430.
+//App.Apps.SocketIO.set('transports', ['jsonp-polling']); // Forced to do this because of https://github.com/Automattic/socket.io/issues/430.
 App.Apps.SocketIO.set('log level', /*App.Configs.Global.IsDebugging ? 3 : 1*/ 1); // Logging for or not for App.Configs.Global.IsDebugging.
 
 // Start listening!
@@ -268,8 +304,7 @@ App.Modules.PassPort.use(new App.Auths.Google.Strategy({
 		App.Databases.UserDatabase.serialize(function() {
 			App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Id="' + Profile.Id + '" LIMIT 1', function(Error, Rows) {
 				if (Error) { // Error!
-					throw JSON.stringify(Error, null, 4).red;
-					return;
+					App.Console.Throw(Error);
 				}
 
 				if (Rows.length !== 0) {
@@ -277,11 +312,17 @@ App.Modules.PassPort.use(new App.Auths.Google.Strategy({
 					Profile.Kills = Rows[0].Kills;
 					Profile.Deaths = Rows[0].Deaths;
 					Profile.Shots = Rows[0].Shots;
+					Profile.Client = Rows[0].Client;
 				} else {
-					App.Databases.UserDatabase.run('INSERT INTO Users (Email, Id) VALUES ("' + Profile.Email + '", "' + Profile.Id + '")');
+					App.Databases.UserDatabase.run('INSERT INTO Users (Email, Id, Client) VALUES ("' + Profile.Email + '", "' + Profile.Id + '", "' + App.Vars.ClientCodes.Google + ')', function(Error) {
+						if (Error) { // Error!
+							App.Console.Throw(Error);
+						}
+					});
 					Profile.Kills = 0;
 					Profile.Deaths = 0;
 					Profile.Shots = 0;
+					Profile.Client = App.Vars.ClientCodes.Google;
 				}
 
 				return Done(null, Profile);
@@ -316,8 +357,7 @@ App.Modules.PassPort.use(new App.Auths.Facebook.Strategy({
 	App.Databases.UserDatabase.serialize(function() {
 		App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Id="' + Profile.Id + '" LIMIT 1', function(Error, Rows) {
 			if (Error) { // Error!
-				throw JSON.stringify(Error, null, 4).red;
-				return;
+				App.Console.Throw(Error);
 			}
 
 			if (Rows.length !== 0) {
@@ -325,11 +365,17 @@ App.Modules.PassPort.use(new App.Auths.Facebook.Strategy({
 				Profile.Kills = Rows[0].Kills;
 				Profile.Deaths = Rows[0].Deaths;
 				Profile.Shots = Rows[0].Shots;
+				Profile.Client = Rows[0].Client;
 			} else {
-				App.Databases.UserDatabase.run('INSERT INTO Users (Email, Id) VALUES ("' + Profile.Email + '", "' + Profile.Id + '")');
+				App.Databases.UserDatabase.run('INSERT INTO Users (Email, Id, Client) VALUES ("' + Profile.Email + '", "' + Profile.Id + '", "' + App.Vars.ClientCodes.Facebook + ')', function(Error) {
+					if (Error) { // Error!
+						App.Console.Throw(Error);
+					}
+				});
 				Profile.Kills = 0;
 				Profile.Deaths = 0;
 				Profile.Shots = 0;
+				Profile.Client = App.Vars.ClientCodes.Facebook;
 			}
 
 			return Done(null, Profile);
@@ -361,29 +407,36 @@ App.Modules.PassPort.use(new App.Auths.Twitter.Strategy({
 		// Get other profile info.
 		App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Id="' + Profile.Id + '" LIMIT 1', function(Error, Rows) {
 			if (Error) { // Error!
-				throw JSON.stringify(Error, null, 4).red;
-				return;
+				App.Console.Throw(Error);
 			}
 
 			if (Rows.length !== 0) {
 				Profile.Username = Rows[0].Username;
-				Profile.Email = Rows[0].Email;
+				// Profile.Email = Rows[0].Email;
 				Profile.Kills = Rows[0].Kills;
 				Profile.Deaths = Rows[0].Deaths;
 				Profile.Shots = Rows[0].Shots;
+				Profile.Client = Rows[0].Client;
 			} else {
 				// Check if Twitter username is taken.
 				App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Username="' + Profile.username + '" LIMIT 1', function(Error, Rows) {
 					if (Error) { // Error!
-						throw JSON.stringify(Error, null, 4).red;
-						return;
+						App.Console.Throw(Error);
 					}
 
 					if (Rows.length === 0) { // If is not taken, set username.
 						Profile.Username = Profile.username;
-						App.Databases.UserDatabase.run('INSERT INTO Users (Username, Id) VALUES ("' + Profile.Username + '", "' + Profile.Id + '")');
+						App.Databases.UserDatabase.run('INSERT INTO Users (Username, Id, Client) VALUES ("' + Profile.Username + '", "' + Profile.Id + '", "' + App.Vars.ClientCodes.Twitter + ')', function(Error) {
+							if (Error) { // Error!
+								App.Console.Throw(Error);
+							}
+						});
 					} else { // Otherwise the user will have to pick another later.
-						App.Databases.UserDatabase.run('INSERT INTO Users (Id) VALUES ("' + Profile.Id + '")');
+						App.Databases.UserDatabase.run('INSERT INTO Users (Id, Client) VALUES ("' + Profile.Id + '", "' + App.Vars.ClientCodes.Twitter + ')', function(Error) {
+							if (Error) { // Error!
+								App.Console.Throw(Error);
+							}
+						});
 					}
 
 					// Default.
@@ -391,6 +444,7 @@ App.Modules.PassPort.use(new App.Auths.Twitter.Strategy({
 					Profile.Kills = 0;
 					Profile.Deaths = 0;
 					Profile.Shots = 0;
+					Profile.Client = App.Vars.ClientCodes.Twitter;
 				});
 			}
 
@@ -527,8 +581,7 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 					// Check if username is taken.
 					App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Username="' + Response.req.query.NewUsername + '" LIMIT 1', function(Error, Rows) {
 						if (Error) { // Error!
-							throw JSON.stringify(Error, null, 4).red;
-							return;
+							App.Console.Throw(Error);
 						}
 
 						if (Rows.length !== 0) { // Is taken.
@@ -539,7 +592,11 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 							}));
 						} else { // Is not, save username.
 							Request._passport.session.user.Username = Response.req.query.NewUsername;
-							App.Databases.UserDatabase.run('UPDATE Users SET Username="' + Response.req.query.NewUsername + '" WHERE Id="' + Request.user.Id + '"');
+							App.Databases.UserDatabase.run('UPDATE Users SET Username="' + Response.req.query.NewUsername + '" WHERE Id="' + Request.user.Id + '"', function(Error) {
+								if (Error) { // Error!
+									App.Console.Throw(Error);
+								}
+							});
 							Response.redirect('/Me/Profile/?Error=Success!');
 						}
 					});
@@ -572,7 +629,9 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 	var RoomData = [];
 	if (Request.user) { // If user is logged in, compile rooms.
 		for (var RoomName in App.Vars.Rooms) {
-			RoomData.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
+			if (App.Vars.Rooms.hasOwnProperty(RoomName)) {
+				RoomData.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
+			}
 		}
 	}
 
@@ -587,44 +646,12 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 	}));
 });
 
-// Same as /rooms.
-App.Apps.Express.get('/Room', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
-	// Redirect to /rooms.
-	Response.redirect('/rooms');
-});
-
-// Send rooms.
-App.Apps.Express.get('/Rooms', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
-	// Compile room data.
-	var Rooms = [];
-	if (Request.user) { // If user is logged in compile rooms.
-		for (var RoomName in App.Vars.Rooms) { // Compile rooms.
-			Rooms.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
-		}
-	}
-	Response.send(Rooms);
-});
-
-// Join a room.
-App.Apps.Express.get('/Play/:RoomName', App.Apps.Express.MiddleWare.AuthenticateUser, App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
-	if (!Request.user.Username) { // No username, force setup.
-		Response.redirect('/Me/Profile/Finalize');
-	} else { // Send page.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Assets/Html/Game.html'.LocalFilePath, {
-			Me: Request.user, //Me
-			RoomData: { Name: Request.params.RoomName, Password: Response.req.query.Password, PlayerNumber: Response.req.query.PlayerNumber || 1}, // Game Data
-			IsDebugging: App.Configs.Global.IsDebugging // Is debugging?
-		}));
-	}
-});
-
 // Get top 50 users.
 App.Apps.Express.get('/Leaderboard', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
 	App.Databases.UserDatabase.serialize(function() {
 		App.Databases.UserDatabase.all('SELECT rowid AS Place, * FROM Users LIMIT 50', function(Error, Users) { // Get top 50 users.
 			if (Error) { // Error!
-				throw JSON.stringify(Error, null, 4).red;
-				return;
+				App.Console.Throw(Error);
 			}
 
 			// Compile top 50 users.
@@ -680,10 +707,9 @@ App.Apps.Express.get('/SearchUsers', function(Request, Response) {
 	} else {
 		// Get all usernames like query.
 		App.Databases.UserDatabase.serialize(function() {
-			App.Databases.UserDatabase.all('SELECT rowid AS rowid, * FROM Users WHERE Username LIKE "%' + Response.req.query.Query + '%" OR Username LIKE "%' + Response.req.query.Query + '" OR Username LIKE "' + Response.req.query.Query + '%" OR Username LIKE "' + Response.req.query.Query+ '" LIMIT 50', function(Error, Users) {
+			App.Databases.UserDatabase.all('SELECT rowid AS Place, * FROM Users WHERE Username LIKE "%' + Response.req.query.Query + '%" OR Username LIKE "%' + Response.req.query.Query + '" OR Username LIKE "' + Response.req.query.Query + '%" OR Username LIKE "' + Response.req.query.Query+ '" LIMIT 50', function(Error, Users) {
 				if (Error) { // Error!
-					throw JSON.stringify(Error, null, 4).red;
-					return;
+					App.Console.Throw(Error);
 				}
 
 				// Compile users.
@@ -710,8 +736,7 @@ App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForM
 	App.Databases.UserDatabase.serialize(function() {
 		App.Databases.UserDatabase.all('SELECT * FROM Users WHERE Username="' + Request.params.Username + '" LIMIT 1', function(Error, User) {
 			if (Error) { // Error!
-				throw JSON.stringify(Error, null, 4).red;
-				return;
+				App.Console.Throw(Error);
 			}
 
 			// Send page.
@@ -726,6 +751,107 @@ App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForM
 			}));
 		});
 	});
+});
+
+//========== START /MYADMIN/* ROUTES ==========
+
+// Main admin page.
+App.Apps.Express.get('/MyAdmin', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
+	Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Assets/Html/Admin.html'.LocalFilePath, {}));
+});
+
+// Login authentication.
+App.Apps.Express.post('/MyAdmin/Login', function(Request, Response) {
+	if (App.Configs.Global.IsMaintaining) { // If is maintaining, all processes must be stopped.
+		Response.json('Maintenance');
+		return;
+	}
+
+	if (Response.req.query.Username === 'admin' && Response.req.query.Password === '123') { // Match username and password.
+		Response.json({Signal: true, SecretToken: App.Configs.Global.AdminSecret});
+		return;
+	}
+
+	Response.json({Signal: false, Error: 'Invalid login.'});
+});
+
+// Run arguments.
+App.Apps.Express.post('/MyAdmin/Do', function(Request, Response) {
+	if (App.Configs.Global.IsMaintaining) { // If is maintaining, all processes must be stopped.
+		Response.json('Maintenance');
+		return;
+	}
+
+	if (Response.req.query.Secret == App.Configs.Global.AdminSecret) {
+		if (Response.req.query.Action === 'rows') {
+			try {
+				App.Databases.UserDatabase.serialize(function() {
+					var StartTime = Date.now();
+
+					App.Databases.UserDatabase.all(Response.req.query.Query, function(Error, Rows) {
+						if (Error) {
+							Response.json({Signal: false, Error: Error.message});
+						} else {
+							Response.json({Signal: true, Rows: Rows, Time: Date.now() - StartTime});
+						}
+					});
+				});
+			} catch (Error) {
+				Response.json({Signal: false, Error: Error.message});
+			}
+		} else if (Response.req.query.Action === 'run') {
+			App.Databases.UserDatabase.serialize(function() {
+				var StartTime = Date.now();
+
+				App.Databases.UserDatabase.run(Response.req.query.Query, function(Error) {
+					if (Error) {
+						Response.json({Signal: false, Error: Error.message});
+					} else {
+						Response.json({Signal: true, Time: Date.now() - StartTime});
+					}
+				});
+			});
+		} else {
+			Response.json({Signal: false, Error: 'Invalid query.'});
+		}
+	} else {
+		Response.json({Signal: false, Error: 'Unauthorized.'});
+	}
+});
+
+//========== START GAME ROUTES ==========
+
+// Send rooms.
+App.Apps.Express.get('/Rooms', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
+	// Compile room data.
+	var Rooms = [];
+	if (Request.user) { // If user is logged in compile rooms.
+		for (var RoomName in App.Vars.Rooms) { // Compile rooms.
+			if (App.Vars.Rooms.hasOwnProperty(RoomName)) {
+				Rooms.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
+			}
+		}
+	}
+	Response.send(Rooms);
+});
+
+// Join a room.
+App.Apps.Express.get('/Play/:RoomName', App.Apps.Express.MiddleWare.AuthenticateUser, App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
+	if (!Request.user.Username) { // No username, force setup.
+		Response.redirect('/Me/Profile/Finalize');
+	} else { // Send page.
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Assets/Html/Game.html'.LocalFilePath, {
+			Me: Request.user, //Me
+			RoomData: { Name: Request.params.RoomName, Password: Response.req.query.Password, PlayerNumber: Response.req.query.PlayerNumber || 1}, // Game Data
+			IsDebugging: App.Configs.Global.IsDebugging // Is debugging?
+		}));
+	}
+});
+
+//========== START SYSTEM ROUTES ==========
+
+App.Apps.Express.get('/IP', function(req, res) {
+	res.send(req.ip || req.ips);
 });
 
 // Maintenance page.
@@ -744,7 +870,8 @@ App.Apps.Express.get('/Maintenance', function(Request, Response) {
 // 404.
 App.Apps.Express.get('*', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
 	// Tell user we could not find the requested url.
-	Response.redirect('/?Error=Cannot find "' + Request.url + '".');
+	Response.send(App.Vars.ResponseCodes.NotFound, 'Cannot find "' + Request.url + '".');
+	// Response.redirect('/?Error=Cannot find "' + Request.url + '".');
 });
 
 //========== START SOCKET.IO ==========
@@ -758,8 +885,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 	// Get PassPort session.
 	Socket.handshake.getSession(function (Error, Session) {
 		if (Error) { // Error!
-			throw JSON.stringify(Error, null, 4).red;
-			return;
+			App.Console.Throw(Error);
 		}
 
 		// User is requesting to be added.
@@ -847,7 +973,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 		Socket.on('disconnect', function() {
 			// If the user is not playing, then don't say that the user left.
 			if (Session.passport.user.IsPlaying === false) {
-				App.Console.Log(App.Vars.LineNumber, ('Address disconnected: ' +  Socket.IP + '.').red);
+				App.Console.Log(App.Vars.LineNumber, ('Address disconnected: ' + Socket.IP + '.').red);
 
 				return;
 			}
@@ -869,18 +995,21 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 			// Save the session.
 			Socket.handshake.saveSession(Session, function (Error) {
 				if (Error) { // Error!
-					throw JSON.stringify(Error, null, 4).red;
-					return;
+					App.Console.Throw(Error);
 				}
 			});
 
 			// Update database with new information.
 			App.Databases.UserDatabase.serialize(function() {
-				App.Databases.UserDatabase.run('UPDATE Users SET Kills=' + Session.passport.user.Kills + ', Shots=' + Session.passport.user.Shots + ', Deaths=' + Session.passport.user.Deaths + ' WHERE Id="' + Session.passport.user.Id + '"');
+				App.Databases.UserDatabase.run('UPDATE Users SET Kills=' + Session.passport.user.Kills + ', Shots=' + Session.passport.user.Shots + ', Deaths=' + Session.passport.user.Deaths + ' WHERE Id="' + Session.passport.user.Id + '"', function(Error) {
+					if (Error) { // Error!
+						App.Console.Throw(Error);
+					}
+				});
 			});
 
 			App.Console.Log(App.Vars.LineNumber, ('User ' + Session.passport.user.Username + ' left.').red);
-			App.Console.Log(App.Vars.LineNumber, ('Address disconnected: ' +  Socket.IP + '.').red);
+			App.Console.Log(App.Vars.LineNumber, ('Address disconnected: ' + Socket.IP + '.').red);
 		});
 	});
 });
@@ -889,7 +1018,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 
 // Maintenance CRON job.
 App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Every day, at midnight.
-		const Timer = Object.seal({
+		var Timer = Object.seal({
 			StartTime: new Date(), // Time this job started.
 			EndTime: null
 		});
@@ -900,16 +1029,23 @@ App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Ev
 		App.Databases.UserDatabase.serialize(function() {
 			App.Databases.UserDatabase.all('SELECT * FROM Users ORDER BY Kills DESC', function(Error, Users) { // Get all users.
 				if (Error) { // Error!
-					throw JSON.stringify(err, null, 4).red;
-					return;
+					App.Console.Throw(Error);
 				}
 
 				// Delete all user entries.
-				App.Databases.UserDatabase.run('DELETE FROM Users');
+				App.Databases.UserDatabase.run('DELETE FROM Users', function(Error) {
+					if (Error) { // Error!
+						App.Console.Throw(Error);
+					}
+				});
 
 				// Rewrite new entries.
 				for (var Iterator = 0; Iterator < Users.length; Iterator++) {
-					App.Databases.UserDatabase.run('INSERT INTO Users (Email, Username, Kills, Deaths, Shots, Id) VALUES ("' + Users[Iterator].Email + '", "' + Users[Iterator].Username + '", "' + Users[Iterator].Kills + '", "' + Users[Iterator].Deaths + '", "' + Users[Iterator].Shots + '", "' + Users[Iterator].Id + '")');
+					App.Databases.UserDatabase.run('INSERT INTO Users (Email, Username, Kills, Deaths, Shots, Id) VALUES ("' + Users[Iterator].Email + '", "' + Users[Iterator].Username + '", "' + Users[Iterator].Kills + '", "' + Users[Iterator].Deaths + '", "' + Users[Iterator].Shots + '", "' + Users[Iterator].Id + '")', function(Error) {
+						if (Error) { // Error!
+							App.Console.Throw(Error);
+						}
+					});
 				}
 
 				App.Configs.Global.IsMaintaining = false; // Stop maintenance.
@@ -918,14 +1054,13 @@ App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Ev
 
 				// Send log.
 				App.Emails.Google.Emailer.sendMail({
-					from: 'Invisiball Maintenance Job ✔ <' + App.Emails.Google.Account.Email + '>',
+					from: 'Invisiball Maintenance Job <' + App.Emails.Google.Account.Email + '>',
 					to: App.Emails.Google.Account.Email,
 					subject: 'Daily Maintenance Job',
 					html: '<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"><link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css"><script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><h1>Daily Maintenance Job Log</h1><b>At: ' + Timer.StartTime.toString() + '</b><br><br><br><table class="table table-hover"><tbody><tr><td><b>Duration</b></td><td>' + (Timer.EndTime - Timer.StartTime.getTime()).toString() + ' ms</td></tr><tr><td><b>Entries Parsed</b></td><td>' + Users.length.toString() + ' ENTRIES</td></tr><tr><td><b>Final Server State</b></td><td>STABLE ✔</td></tr></tbody></table>'
 				}, function(Error, Response) {
 					if (Error) { // Error!
-						throw JSON.stringify(Error, null, 4).red;
-						return;
+						App.Console.Throw(Error);
 					}
 
 					App.Console.Log(App.Vars.LineNumber, 'Sent maintenance log successfully!'.green);
@@ -936,3 +1071,15 @@ App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Ev
 );
 
 App.Jobs.Maintenance.start();
+
+//========== START PROCESS EVENTS ==========
+
+process.on('exit', function() {
+	App.Console.Log(App.Vars.LineNumber, 'Cleaning up...'.red);
+	App.Databases.UserDatabase.close();
+	process.exit();
+});
+
+process.on('SIGINT', function() {
+	process.exit();
+});

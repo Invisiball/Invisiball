@@ -10,10 +10,10 @@
 	</div>
 	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 		<ul class="nav navbar-nav navbar-right">
-			<li><a href="/About">About</a></li>
 			{% if IsAuthenticated %}
 				<li><a href="/">Play</a></li>
 				<li><a href="/Me/Profile">Profile</a></li>
+				<li><a href="/Leaderboard">Leaderboard</a></li>
 			{% else %}
 				<li><a href="/Me/Login">Login / Sign Up</a></li>
 			{% endif %}

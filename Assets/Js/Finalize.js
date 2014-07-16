@@ -23,15 +23,6 @@
 
 ////////// INVISIBALL //////////////
 
-/**
- * Replaces all find with replace.
- * @param find String to find.
- * @param replace String to replace found with.
- */
-String.prototype.Replace = function(find, replace) {
-	return this.replace(new RegExp(find, 'g'), replace);
-}
-
 // "Go" button click.
 $('button').click(function() {
 	if (!(/^[a-z0-9]+$/i).test($('input').val()) || $('input').val().length < 8) { // Check for bad usernames.

@@ -23,42 +23,66 @@
 
 ////////// INVISIBALL //////////////
 
-var old_data = [], data_childs = $('tbody').length === 0 ? [] : $('tbody').children();
+var Top50 = $('tbody').children(), /**< Top 50 players. */
+	LastQuery = '';
 
+/**
+ * Queries all player information to get matches.
+ */
 function query(str) {
-	if (str === '') {
-		$('tbody').html('');
+	if (LastQuery === str) { // No point of updating if query is the same.
+		return;
+	}
 
-		for (var iter = 0; iter < data_childs.length; iter++) {
-			$('tbody').append('<tr>' + data_childs[iter].innerHTML + '</tr>');
+	LastQuery = str; // New last query.
+
+	if (str === '') { // If blank, show top 50.
+		$('tbody').html(''); // Clear table.
+
+		// Enter top 50 data.
+		for (var iter = 0; iter < Top50.length; iter++) {
+			$('tbody').append('<tr>' + Top50[iter].innerHTML + '</tr>');
 		}
-	} else {
+	} else { // Not blank, so query with str.
 		$.get('/SearchUsers/?Query=' + str, function(data) {
-			$('tbody').html('');
+			$('tbody').html(''); // Clear table.
 
-			if (data === 'Maintenance') {
+			if (data === 'Maintenance') { // If there is maintenance, go to maintenenace.
 				window.location.href = '/Maintenance?FromGame=false';
 			}
 
+			// Otherwise, enter players which were matched.
 			for (var iter = 0; iter < data.length; iter++) {
-				var accuracy = data[iter].kills * 100 / data[iter].shots;
+				// Accuracy.
+				var accuracy = data[iter].Kills * 100 / data[iter].Shots;
 				if (accuracy.toString() === 'NaN') {
 					accuracy = (0).toFixed(2);
 				}
 
-				var kdr = data[iter].kills / data[iter].deaths;
+				// Kdr.
+				var kdr = data[iter].Kills / data[iter].Deaths;
 				if (kdr === Infinity) {
-					kdr = data[iter].kills.toFixed(2);
+					kdr = data[iter].Kills.toFixed(2);
 				} else if (kdr.toString() === 'NaN') {
 					kdr = (0).toFixed(2);
 				}
 
-				$('tbody').append('<tr><td>' + data[iter].rowid + '</td><td><a href="/Profile/' + data[iter].username + '">' + data[iter].username + '</a></td><td>' + data[iter].kills.toString() + '</td><td>' + data[iter].deaths.toString() + '</td><td>' + data[iter].shots.toString() + '</td><td>' + accuracy.toString() + '%</td><td>' + kdr.toString() + '</td></tr>');
+				// Append data.
+				$('tbody').append('<tr><td>' + data[iter].Place + '</td>' +
+								  '<td><a href="/Profile/' + data[iter].Username + '">' + data[iter].Username + '</a></td>' +
+								  '<td>' + data[iter].Kills.toString() + '</td>' +
+								  '<td>' + data[iter].Deaths.toString() + '</td>' +
+								  '<td>' + data[iter].Shots.toString() + '</td>' +
+								  '<td>' + accuracy.toString() + '%</td>' +
+								  '<td>' + kdr.toString() + '</td></tr>');
 			}
 		});
 	}
 }
 
+// On enter, key up.
 $('#search').keyup(function(v) {
-	query($(this).val() || '');
+	if (v.keyCode === 13) { // "ENTER" pressed.
+		query($(this).val() || '');
+	}
 });

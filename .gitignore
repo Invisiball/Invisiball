@@ -21,3 +21,5 @@ node_modules
 
 *.sublime-project
 *.sublime-workspace
+
+Game_Prettified.js

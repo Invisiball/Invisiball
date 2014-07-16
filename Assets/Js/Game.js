@@ -126,17 +126,18 @@
 
 	var sphereShape, sphereBody, world, physicsMaterial, balls = [], ballMeshes = [], walls = [];
 
-	const ONE_SECOND = 60, /**< Time for 1 second to go through. */
-		  MAX_TIME_LIMIT = 3 * ONE_SECOND, /**< Seconds until balls disappear. */
-		  MAX_USER_BALL_NUMBER = 10; /**< Number of balls allowed by the user. */
+	var ONE_SECOND = 60, /**< Time for 1 second to go through. */
+		MAX_TIME_LIMIT = 3 * ONE_SECOND, /**< Seconds until balls disappear. */
+		MAX_USER_BALL_NUMBER = 10; /**< Number of balls allowed by the user. */
 
 	var BALLS_OF_USER = 0; /**< Number of balls that the user owns. */
 
 	var camera, scene, renderer, stats,
 		geometry, material, mesh,
-		controls, time = Date.now();
+		loader, controls, time = Date.now();
 
-	var lights = []; /**< Light data. */
+	var lights = [], /**< Light data. */
+		flashlight; /**< Player's flashlight. */
 
 	var blocker = document.getElementById('blocker'), instructions = document.getElementById('instructions');
 
@@ -259,6 +260,9 @@
 	 * Sets up the world and scene.
 	 */
 	function init() {
+		// Make loader.
+		loader = new THREE.JSONLoader(__DEBUG__);
+
 		// Set physics gravity.
 		world.gravity.set(0, -30, 0);
 
@@ -277,12 +281,17 @@
 
 		// Add more lights.
 		lights.push(createNewLight(0, 60, 0));
+		scene.add(lights[0]);
 		lights.push(createNewLight(-50, 60, 100));
 		lights.push(createNewLight(-50, 60, -100));
 		lights.push(createNewLight(100, 60, 0));
 		for (var iter = 0; iter < lights.length; iter++) {
 			scene.add(lights[iter]);
 		}
+
+		// Add flashlight.
+		flashlight = new THREE.PointLight(0xFFFFFF, 0.7, 15);
+		scene.add(flashlight);
 
 		// Create controls.
 		controls = new PointerLockControls(camera, sphereBody);
@@ -332,7 +341,7 @@
 		var stone = new CANNON.Material('stone');
 
 		// Create walls.
-		for (var iter = 0; iter < 4; iter++) {
+		for (var iter = 0; iter < 2; iter++) {
 			walls.push({ plane: new CANNON.Plane() });
 			walls[iter].body = new CANNON.RigidBody(0, walls[iter].plane, stone);
 		}
@@ -343,15 +352,56 @@
 		walls[1].body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 		walls[1].body.position.set(150, 0, 0);
 
-		walls[2].body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-		walls[2].body.position.set(0, -150, 0);
+		// walls[2].body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+		// walls[2].body.position.set(0, -150, 0);
 
-		walls[3].body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
-		walls[3].body.position.set(0, 150, 0);
+		// walls[3].body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
+		// walls[3].body.position.set(0, 150, 0);
 
-		for (var iter = 0; iter < 4; iter++) {
+		for (var iter = 0; iter < 2; iter++) {
 			world.add(walls[iter].body);
 		}
+
+		// // Create castle.
+		// loader.load('/Meshes/CastleTower/CastleTower.js', function(geometry, materials) {
+		// 	// window.castles = [,,,,];
+
+		// 	// for (var iter = 0; iter < 4; iter++) {
+		// 	// 	castles[iter] = new THREE.Mesh(geometry, material);
+		// 	// 	castles[iter].scale.set(0.2, 0.2, 0.2);
+		// 	// 	castles[iter].rotation.setX(-Math.PI/2);
+		// 	// 	scene.add(castles[iter]);
+		// 	// }
+
+		// 	// castles[0].position.set(0, 0, 0);
+		// 	// castles[1].position.set(-50, 0, 100);
+		// 	// castles[2].position.set(-50, 0, -100);
+		// 	// castles[3].position.set(100, 0, 0);
+
+		// 	castle = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial(materials));
+		// 	castle.scale.set(0.2, 0.2, 0.2);
+		// 	castle.rotation.setX(-Math.PI/2);
+
+		// 	scene.add(castle);
+		// });
+
+		// // Create sand level.
+		// loader.load('/Meshes/SandLevel/SandLevel.js', function(geometry, materials) {
+		// 	console.log(materials);
+
+		// 	var sand = new THREE.Mesh(geometry, /*new THREE.MeshLambertMaterial(*/materials);
+		// 	sand.position.set(0, 20.7, 0);
+		// 	scene.add(sand);
+		// });
+
+		// // Create prisoner level.
+		// loader.load('/Meshes/PrisonerLevel/PrisonerLevel.js', function(geometry) {
+		// 	prisoner = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial());
+		// 	prisoner.scale.set(3.0, 3.0, 3.0);
+		// 	prisoner.rotation.set(-Math.PI/2, 0, 0)
+		// 	prisoner.position.set(0, 2, 0);
+		// 	scene.add(prisoner);
+		// });
 
 		// Create renderer.
 		renderer = new THREE.WebGLRenderer();
@@ -406,6 +456,9 @@
 			}
 		}
 
+		// Set flashlight.
+		flashlight.position = sphereBody.position;
+
 		// Update controls, scene, camera, time, and stats
 		controls.update(Date.now() - time);
 		renderer.render(scene, camera);
@@ -457,14 +510,14 @@
 					shootDirection.y * shootVelo,
 					shootDirection.z * shootVelo
 				], [
-					sphereBody.position.x + shootDirection.x * (sphereShape.radius * 1.52 + ballShape.radius),
-					sphereBody.position.y + shootDirection.y * (sphereShape.radius * 1.52 + ballShape.radius),
-					sphereBody.position.z + shootDirection.z * (sphereShape.radius * 1.52 + ballShape.radius)
+					sphereBody.position.x + shootDirection.x * (sphereShape.radius + ballShape.radius),
+					sphereBody.position.y + shootDirection.y * (sphereShape.radius + ballShape.radius),
+					sphereBody.position.z + shootDirection.z * (sphereShape.radius + ballShape.radius)
 				]]);
 
-			if (__DEBUG__) {
-				console.log('Ball::Set');
-			}
+			// if (__DEBUG__) {
+			// 	console.debug('Ball::Set');
+			// }
 		}
 	});
 
@@ -478,9 +531,9 @@
 
 	// Add keyup event for detecting toggles.
 	window.addEventListener('keyup', function(e) {
-		if (__DEBUG__) {
-			console.log(e.keyCode);
-		}
+		// if (__DEBUG__) {
+		// 	console.debug(e.keyCode);
+		// }
 
 		if (e.keyCode === 76) { // "L" was pressed.
 			if (!toggle.isTalking) { // Make sure user is not typing a message.
@@ -508,6 +561,7 @@
 					$($('.hair')[1]).fadeIn(0);
 					$('#update').fadeIn(0);
 					$('#stats').fadeIn(0);
+					// THREE.FullScreen.request(renderer.domElement);
 					toggle.isInPrintMode = false;
 				} else { // Hide views if not in cinematic mode.
 					$('#leaderboard').fadeOut(0);
@@ -517,6 +571,7 @@
 					$($('.hair')[1]).fadeOut(0);
 					$('#update').fadeOut(0);
 					$('#stats').fadeOut(0);
+					// THREE.FullScreen.cancel();
 					toggle.isInPrintMode = true;
 				}
 			}
@@ -550,11 +605,11 @@
 		update('<li style="color: green;">Connected!</li>');
 
 		if (__DEBUG__) {
-			console.log('User::Authenticate (' + room_data.name + ')');
+			console.debug('User::Authenticate (' + room_data.Name + ')');
 		}
 
 		// Authenticate user.
-		socket.emit('user::authenticate', room_data.name);
+		socket.emit('user::authenticate', room_data.Name);
 
 		// Connecting.
 		socket.on('connecting', function() {
@@ -603,7 +658,7 @@
 				if (dateNow - window.times['ball::set'][name] < 40) {
 					window.times['ball::set'][name] = dateNow;
 					if (__DEBUG__) {
-						console.log('[ball::set] Double Event Blocked!');
+						console.debug('[ball::set] Double Event Blocked!');
 					}
 					return;
 				}
@@ -611,7 +666,7 @@
 			}*/
 
 			if (__DEBUG__) {
-				console.log('Ball::Set (' + name + ').');
+				console.debug('Ball::Set (' + name + ').');
 			}
 
 			// Set the ball's distinct color.
@@ -650,14 +705,14 @@
 			if (dateNow - window.times['score::add'][name][victim] < 40) {
 				window.times['score::add'][name][victim] = dateNow;
 				if (__DEBUG__) {
-					console.log('[score::add] Double Event Blocked!');
+					console.debug('[score::add] Double Event Blocked!');
 				}
 				return;
 			}
 			window.times['score::add'][name][victim] = dateNow;*/
 
 			if (__DEBUG__) {
-				console.log('Score::Add (' + name + ', ' + victim + ').');
+				console.debug('Score::Add (' + name + ', ' + victim + ').');
 			}
 
 			if (name === user_data.username) { // Update kills if player was killer.
@@ -705,7 +760,7 @@
 			}
 
 			if (__DEBUG__) {
-				console.log('User::Create (' + JSON.stringify(room_data) + ')');
+				console.debug('Room::Create (' + JSON.stringify(room_data) + ')');
 			}
 
 			// Create user.
@@ -721,7 +776,7 @@
 				if (dateNow - window.times['user::create'][name] < 40) {
 					window.times['user::create'][name] = dateNow;
 					if (__DEBUG__) {
-						console.log('[user::create] Double Event Blocked!');
+						console.debug('[user::create] Double Event Blocked!');
 					}
 					return;
 				}
@@ -729,7 +784,7 @@
 			}*/
 
 			if (__DEBUG__) {
-				console.log('User::Create (' + name + ').');
+				console.debug('User::Create (' + name + ').');
 			}
 
 			// Tell player that a new player joined.
@@ -749,6 +804,7 @@
 			// Disconnect socket when leaving.
 			window.onbeforeunload = function() {
 				socket.disconnect();
+				//return 'Unfortunately, our servers are too slow to realize that you are leaving. Therefore, we are forced to put this message here to let them know what\'s going on. Please disregard this message and continue invisisurfing the Invisiweb. :)';
 			}
 
 			// setInterval(function() {
@@ -765,7 +821,7 @@
 				if (dateNow - window.times['user::delete'][name] < 40) {
 					window.times['user::delete'][name] = dateNow;
 					if (__DEBUG__) {
-						console.log('[user::delete] Double Event Blocked!');
+						console.debug('[user::delete] Double Event Blocked!');
 					}
 					return;
 				}
@@ -773,7 +829,7 @@
 			}*/
 
 			if (__DEBUG__) {
-				console.log('User::Delete (' + name + ').');
+				console.debug('User::Delete (' + name + ').');
 			}
 
 			// Tell the player that a player left.

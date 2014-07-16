@@ -34,6 +34,7 @@
 		<script src="/Js/Utils/Three.js"></script>
 		<script src="/Js/Utils/Cannon.js"></script>
 		<script src="/Js/Utils/PointerLockControls.js"></script>
+		<script src="/Js/Utils/FullScreen.js"></script>
 		<script src="/Js/Utils/Stats.js"></script>
 		<script src="/Js/Utils/SocketIO.js"></script>
 	</head>
@@ -86,9 +87,9 @@
 					id: '{{Me.Id}}'
 				  }),
 				  room_data = Object.freeze({
-					name: '{{RoomData.Name}}',
-					password: '{{RoomData.Password}}',
-					max_players: {{RoomData.PlayerNumber}}
+					Name: '{{RoomData.Name}}',
+					Password: '{{RoomData.Password}}',
+					PlayerNumber: {{RoomData.PlayerNumber}}
 				  }),
 				  __DEBUG__ = {{IsDebugging}};
 		</script>
