@@ -35,7 +35,7 @@
 		{% include './Bits/Navigation.html' %}
 		<div class="container">
 			<h1>Invisi<b>player</b>: <span id="username">{{User.Username}}</span></h1>
-			<h3 id="error">{{Err}}</h3>
+			<h3 id="error" style="color: red;">{{Err}}</h3>
 			{% if DidNotFindUser %}
 				<b>Could not find player with username "{{User.Username}}".</b>
 			{% else %}
