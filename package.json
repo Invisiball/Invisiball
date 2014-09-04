@@ -1,0 +1,39 @@
+{
+  "name": "invisiball",
+  "version": "2.0.0",
+  "description": "A FPS with a twist.",
+  "main": "Server.js",
+  "scripts": {
+    "test": "echo \"Hello World!\" && exit 0",
+    "start": "node Server.js"
+  },
+  "dependencies": {
+    "colors": "0.6.2",
+    "connect-sqlite3": "0.9.3",
+    "cron": "1.0.4",
+    "express": "3.4.8",
+    "nodemailer": "0.6.5",
+    "passport": "0.2.0",
+    "passport-facebook": "1.0.3",
+    "passport-google-oauth": "0.1.5",
+    "passport-twitter": "1.0.2",
+    "passport.socketio": "3.0.1",
+    "socket-io.sessions": "0.1.0",
+    "socket.io": "0.9.17",
+    "sqlite3": "2.2.3",
+    "swig": "1.3.2",
+    "time": "0.11.0"
+  },
+  "engines": {
+    "node": "0.10.28"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Invisiball/Invisiball.git"
+  },
+  "keywords": [
+    "invisiball"
+  ],
+  "author": "Invisiball",
+  "license": "MIT"
+}
