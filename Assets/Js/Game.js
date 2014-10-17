@@ -23,7 +23,7 @@
 
 ////////// INVISIBALL //////////////
 
-//(function(){
+(function(){
 	/**
 	 * Returns a random number between and including min and max.
 	 * @param min Minimum number to return.
@@ -109,7 +109,7 @@
 		var final = '';
 		for (var iter = leaderboardData.length - 1; iter >= 0; iter--) {
 			final += '<tr' + (leaderboardData[iter].is_self ? ' style="color: orange;">' : '>') +
-					 '<td>' + leaderboardData[iter].username + '</td>' +
+					 '<td>' + leaderboardData[iter].username.replace(/\</g, '&lt;').replace(/\>/g, '&gt;') + '</td>' +
 					 '<td>' + leaderboardData[iter].kills + '</td>' +
 					 '<td>' + leaderboardData[iter].deaths + '</td></tr>';
 		}
@@ -151,7 +151,7 @@
 				blocker.style.display = 'none';
 			} else {
 				$('#title').html('Click to play.');
-				$('#body').html('(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)');
+				$('#body').html('(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK/SHIFT/CRTL = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)');
 
 				controls.enabled = false;
 
@@ -487,12 +487,12 @@
 		targetVec.z = ray.direction.z;
 	}
 
-	// Add click (shot) event listener.
-	window.addEventListener('click', function(e) {
+	function shoot() {
 		if (controls.enabled) { // Make sure that controls are enabled.
 			if (BALLS_OF_USER >= MAX_USER_BALL_NUMBER) { // If player-owned balls exceed the maximum number of balls, do nothing.
 				return;
 			}
+
 			// Otherwise, increment user's ball counter.
 			BALLS_OF_USER++;
 
@@ -510,15 +510,20 @@
 					shootDirection.y * shootVelo,
 					shootDirection.z * shootVelo
 				], [
-					sphereBody.position.x + shootDirection.x * (sphereShape.radius + ballShape.radius),
-					sphereBody.position.y + shootDirection.y * (sphereShape.radius + ballShape.radius),
-					sphereBody.position.z + shootDirection.z * (sphereShape.radius + ballShape.radius)
+					sphereBody.position.x + shootDirection.x * (sphereShape.radius + ballShape.radius + 1),
+					sphereBody.position.y + shootDirection.y * (sphereShape.radius + ballShape.radius + 1),
+					sphereBody.position.z + shootDirection.z * (sphereShape.radius + ballShape.radius + 1)
 				]]);
 
 			// if (__DEBUG__) {
 			// 	console.debug('Ball::Set');
 			// }
 		}
+	}
+
+	// Add click (shot) event listener.
+	window.addEventListener('click', function(e) {
+		shoot();
 	});
 
 	// Start toggle options and event.
@@ -535,64 +540,61 @@
 		// 	console.debug(e.keyCode);
 		// }
 
-		if (e.keyCode === 76) { // "L" was pressed.
-			if (!toggle.isTalking) { // Make sure user is not typing a message.
-				if (toggle.isInLeaderboard) { // Remove leaderboard if viewing leaderboard.
-					$('#leaderboard').animate({
-						opacity: 0,
-						right: '-=300'
-					});
-					toggle.isInLeaderboard = false;
-				} else { // Show leaderboard if not viewing leaderboard.
-					$('#leaderboard').animate({
-						opacity: 1,
-						right: '+=300'
-					});
-					toggle.isInLeaderboard = true;
-				}
+		if (e.keyCode === 76 && !toggle.isTalking) { // "L" was pressed. Make sure user is not typing a message.
+			if (toggle.isInLeaderboard) { // Remove leaderboard if viewing leaderboard.
+				$('#leaderboard').animate({
+					opacity: 0,
+					right: '-=300'
+				});
+				toggle.isInLeaderboard = false;
+			} else { // Show leaderboard if not viewing leaderboard.
+				$('#leaderboard').animate({
+					opacity: 1,
+					right: '+=300'
+				});
+				toggle.isInLeaderboard = true;
 			}
-		} else if (e.keyCode === 80) { // "P" was pressed.
-			if (!toggle.isTalking) { // Make sure user is not typing a message.
-				if (toggle.isInPrintMode) { // Reset views if already in cinematic mode.
-					$('#leaderboard').fadeIn(0);
-					$('#instructions').fadeIn(0);
-					$('#userinfo').fadeIn(0);
-					$($('.hair')[0]).fadeIn(0);
-					$($('.hair')[1]).fadeIn(0);
-					$('#update').fadeIn(0);
-					$('#stats').fadeIn(0);
-					// THREE.FullScreen.request(renderer.domElement);
-					toggle.isInPrintMode = false;
-				} else { // Hide views if not in cinematic mode.
-					$('#leaderboard').fadeOut(0);
-					$('#instructions').fadeOut(0);
-					$('#userinfo').fadeOut(0);
-					$($('.hair')[0]).fadeOut(0);
-					$($('.hair')[1]).fadeOut(0);
-					$('#update').fadeOut(0);
-					$('#stats').fadeOut(0);
-					// THREE.FullScreen.cancel();
-					toggle.isInPrintMode = true;
-				}
+		} else if (e.keyCode === 80 && !toggle.isTalking) { // "P" was pressed. Make sure user is not typing a message.
+			if (toggle.isInPrintMode) { // Reset views if already in cinematic mode.
+				$('#leaderboard').fadeIn(0);
+				$('#instructions').fadeIn(0);
+				$('#userinfo').fadeIn(0);
+				$($('.hair')[0]).fadeIn(0);
+				$($('.hair')[1]).fadeIn(0);
+				$('#update').fadeIn(0);
+				$('#stats').fadeIn(0);
+				THREE.FullScreen.request(renderer.domElement);
+				toggle.isInPrintMode = false;
+			} else { // Hide views if not in cinematic mode.
+				$('#leaderboard').fadeOut(0);
+				$('#instructions').fadeOut(0);
+				$('#userinfo').fadeOut(0);
+				$($('.hair')[0]).fadeOut(0);
+				$($('.hair')[1]).fadeOut(0);
+				$('#update').fadeOut(0);
+				$('#stats').fadeOut(0);
+				THREE.FullScreen.cancel();
+				toggle.isInPrintMode = true;
 			}
-		} else if (e.keyCode === 84) { // "T" was pressed.
-			if (!toggle.isTalking) { // If not talking, show the input.
-				update('<input type="text" style="width: 250px; height: 20px; margin: 5px; color: black;" placeholder="Press \'ENTER\' to send.">', false);
-				$('#update').find('input').focus();
-				toggle.isTalking = true;
+		} else if (e.keyCode === 84 && !toggle.isTalking) { // "T" was pressed. If not talking, show the input.
+			update('<input type="text" style="width: 250px; height: 20px; margin: 5px; color: black;" placeholder="Press \'ENTER\' to send.">', false);
+			$('#update').find('input').focus();
+			toggle.isTalking = true;
+		} else if (e.keyCode === 13 && toggle.isTalking) { // "ENTER" was pressed. Send message to server if is talking and there is a message to send.
+			var message = $('#update').find('input').val().replace(/[<>]/g, '');
+			if (message.length !== 0) {
+				socket.emit('user::chat', message);
 			}
-		} else if (e.keyCode === 13) { // "ENTER" was pressed.
-			if (toggle.isTalking) { // Send message to server if is talking and there is a message to send.
-				var message = $('#update').find('input').val().replace(/[<>]/g, '');
-				if (message.length !== 0) {
-					socket.emit('user::chat', message);
-				}
-				$('#update').find('input').remove();
-				toggle.isTalking = false;
-			}
-		} else if (e.keyCode === 67) { // "C" was pressed.
-			// Toggle sound.
+			$('#update').find('input').remove();
+			toggle.isTalking = false;
+		} else if (e.keyCode === 67 && !toggle.isTalking) { // "C" was pressed. Toggle sound if not talking.
 			toggle.allowsSound = !toggle.allowsSound;
+		}
+	});
+
+	window.addEventListener('keydown', function(e) {
+		if ((e.keyCode === 17 || e.keyCode === 16) && !toggle.isTalking) { // "CRTL or SHIFT" was pressed. Make sure the user is not talking.
+			shoot();
 		}
 	});
 
@@ -790,13 +792,18 @@
 			// Tell player that a new player joined.
 			update(name === user_data.username ? '<li style="color: orange;">You joined!</li>' : '<li>' + name + ' joined!</li>');
 
-			// Add this player to the leaderboard.
-			leaderboardData.push({
-				username: name,
-				kills: 0,
-				deaths: 0,
-				is_self: name === user_data.username
-			});
+			// Make sure its not us.
+			if (name !== user_data.username) {
+				// Add this player to the leaderboard.
+				leaderboardData.push({
+					username: name,
+					kills: 0,
+					deaths: 0,
+					Kills: 0,
+					Deaths: 0,
+					is_self: name === user_data.username
+				});
+			}
 
 			// Update the leaderboard.
 			make_leaderboard();
@@ -856,9 +863,13 @@
 		// The leaderboard must be initialized.
 		socket.on('leaderboard::get', function(data) {
 			// Push new data to the leaderboard.
-			for (var iter = 0; iter < data.length; iter++) {
-				data.is_self = false;
-				leaderboardData.push(data[iter]);
+			var keys = Object.keys(data);
+			for (var iter = 0; iter < keys.length; iter++) {
+				data[keys[iter]].username = keys[iter];
+				data[keys[iter]].is_self = (user_data.username === keys[iter]);
+				data[keys[iter]].kills = data[keys[iter]].Kills;
+				data[keys[iter]].deaths = data[keys[iter]].Deaths;
+				leaderboardData.push(data[keys[iter]]);
 			}
 
 			// Update the leaderboard.
@@ -871,4 +882,4 @@
 			window.location.href = '/Maintenance?FromGame=true';
 		});
 	});
-//})('Invisiball');
+})('Invisiball');

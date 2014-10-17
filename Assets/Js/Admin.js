@@ -44,19 +44,18 @@ $('body').terminal(function(args, term) {
 		case 'do': {
 			if (args.length < 3) {
 				term.echo('Reference for \'do\':\n' +
-						  '    do [rows|run] \"query\"\n' +
-						  '    [rows|run]:\n' +
-						  '        rows: If you are running a query.\n' +
-						  '        run: If you are running a command.\n' +
+						  '    do \"action\" \"query\"\n' +
+						  '    action:\n' +
+						  '        \n' +
 						  '    \"query\"\n' +
 						  '        The query or command.');
 			} else {
-				var data = $post('/MyAdmin/Do/?Secret=' + window.localStorage['body_0_token'] + '&Action=' + args[1] + '&Query=' + args[2]);
+				var data = $post('/MyAdmin/Do/?Secret=' + window.localStorage['body_0_token'] + '&Action=' + args[1] + '&Query=' + args[2].replace(/\'/g, '"') + '&Query2=' + (args[3] || '').replace(/\'/g, '"'));
 				data.Signal ? (term.echo(JSON.stringify(data, null, 4), {
-						'finalize': function(div) {
-							div.css('color', 'green');
-						}
-					})) : term.error(JSON.stringify(data, null, 4));
+					'finalize': function(div) {
+						div.css('color', 'green');
+					}
+				})) : term.error(JSON.stringify(data, null, 4));
 			}
 
 			break;

@@ -22,7 +22,7 @@ Instructions and tutorials will be added eventually.
 + [X] Checks for valid and unique usernames.
 + [X] Google & Facebook authentication.
 + [X] I believe that this setup is able to hold up to ~50 - ~100 users at one time.
-+ [ ] Completely modularized code.
++ [X] Completely modularized code.
 + [ ] Logs... Lots and lots of logs.
 + [ ] Maps and modes.
 + [ ] Tutorials, GamePlay, Guides.
