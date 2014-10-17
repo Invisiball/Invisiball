@@ -2,7 +2,7 @@
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Run
-First, edit [Server.js](./Server.js) and fill in your email information and oauth keys / secrets.
+First, edit [Server/Configs.js](./Server/Configs.js) and fill in your email information, OAuth keys / secrets, and MongoDB URL. You should also edit [Server/Routes/Admin.js](./Server/Routes/Admin.js) and fill in a username and password.
 <br>
 Then, run `node Server.js` in Administrator Mode (or `sudo`).
 <br>
