@@ -515,7 +515,7 @@
 			}
 
 			// Otherwise, increment user's ball counter.
-			BALLS_OF_USER++;
+			update_ammo(+1);
 
 			// Play shooting sound if user has sound turned on.
 			if (toggle.allowsSound) {
