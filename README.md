@@ -24,6 +24,7 @@ Instructions and tutorials will be added eventually.
 + [X] I believe that this setup is able to hold up to ~100 users at one time (with [free dynos](https://www.heroku.com/pricing) only).
 + [X] Completely modularized code.
 + [ ] Maps and game modes.
++ [ ] Store
 + [ ] Logs... Lots and lots of logs.
 + [ ] Tutorials, gameplay, guides.
 + [ ] Build a better game UI (like if player does not move for a certain amount of time, a tutorial pops up).
