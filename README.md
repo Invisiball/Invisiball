@@ -2,7 +2,7 @@
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Run
-First, edit [Server/Configs.js](./Server/Configs.js) and fill in your email information, OAuth keys / secrets, and MongoDB URL. You should also edit [Server/Routes/Admin.js](./Server/Routes/Admin.js) and fill in a username and password.
+First, edit [Server/Configs.js](./Server/Configs.js) and fill in your email information, OAuth keys / secrets, and MongoDB URL.
 <br>
 Then, run `node Server.js` in Administrator Mode (or `sudo`).
 <br>
@@ -20,12 +20,12 @@ Instructions and tutorials will be added eventually.
 + [X] Rooms + simple chat.
 + [X] Updates on who killed who, who joined, and who left.
 + [X] Checks for valid and unique usernames.
-+ [X] Google & Facebook authentication.
-+ [X] I believe that this setup is able to hold up to ~50 - ~100 users at one time.
++ [X] Google, Facebook, and Twitter authentication.
++ [X] I believe that this setup is able to hold up to ~100 users at one time (with [free dynos](https://www.heroku.com/pricing) only).
 + [X] Completely modularized code.
++ [ ] Maps and game modes.
 + [ ] Logs... Lots and lots of logs.
-+ [ ] Maps and modes.
-+ [ ] Tutorials, GamePlay, Guides.
++ [ ] Tutorials, gameplay, guides.
 + [ ] Build a better game UI (like if player does not move for a certain amount of time, a tutorial pops up).
 + [ ] Target mobile.
 + [ ] Multiple servers (user's choice).

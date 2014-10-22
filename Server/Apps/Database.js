@@ -7,7 +7,7 @@ App.Modules.MongoDB.connect(App.Vars.DBUrl, function(Error, DataBase) {
 	}
 
 	App.Databases.Database = DataBase;
-	App.Databases.UserDatabase = App.Databases.Database.collection('users')
+	App.Databases.UserDatabase = App.Databases.Database.collection('users');
 	App.Databases.Database.ensureIndex('users', { Username: 'text' }, function(Error) {
 		if (Error) {
 			App.Console.Throw(__filename, App.Utils.LineNumber, Error);

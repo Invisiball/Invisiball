@@ -4,7 +4,21 @@ App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Ev
 		// App.Apps.SocketIO.sockets.emit('maintenance'); // Start maintenance on SocketIO server.
 
 		// Get all users.
-		App.Databases.UserDatabase.find({}).count(function(Error, Count) {
+		App.Databases.UserDatabase.find({}, { sort: [['Kills', 'desc']] }).toArray(function(Error, Users) {
+			if (Error) {
+				App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+			}
+
+			var timeStart = +new Date;
+
+			for (var iter = 0; iter < Users.length; iter++) {
+				App.Databases.UserDatabase.update({ _id: Users[iter]._id }, { $set: { Place: iter + 1 } }, function(Error) {
+					if (Error) {
+						App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+					}
+				});
+			}
+
 			// Send log.
 			App.Emails.Google.Emailer.sendMail({
 				from: 'Invisiball Maintenance Job <' + App.Emails.Google.Account.Email + '>',
@@ -13,11 +27,15 @@ App.Jobs.Maintenance = new App.Modules.Cron('00 00 00 * * *', function() { // Ev
 				html: '<h1>Daily Maintenance Job Log</h1>' +
 					  '<b>At: ' + (new Date()).toString() + '</b>' +
 					  '<br><br><br>' +
-					  '<table class="table table-hover">' +
+					  '<table>' +
 					  	'<tbody>' +
 					  		'<tr>' +
 					  			'<td><b>Entries Parsed</b></td>' +
-					  			'<td>' + Count + ' ENTRIES</td>' +
+					  			'<td>' + Users.length + ' ENTRIES</td>' +
+					  		'</tr>' +
+					  		'<tr>' +
+					  			'<td><b>Done In</b></td>' +
+					  			'<td>' + ((+new Date) - timeStart) + ' ms</td>' +
 					  		'</tr>' +
 					  		'<tr>' +
 					  			'<td><b>Final Server State</b></td>' +

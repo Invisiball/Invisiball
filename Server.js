@@ -64,7 +64,6 @@ require('./Server/Auths/Twitter');
 
 require('./Server/Routes/Me');
 require('./Server/Routes/Index');
-require('./Server/Routes/Admin');
 require('./Server/Routes/Game');
 require('./Server/Routes/System');
 
@@ -79,8 +78,8 @@ require('./Server/Apps/Cron');
 //========== START PROCESS EVENTS ==========
 
 process.on('exit', function() {
-	App.Console.Log(__filename, App.Utils.LineNumber, 'Cleaning up...'.red);
-	App.Databases.UserDatabase.close();
+	App.Console.Error(__filename, App.Utils.LineNumber, 'Cleaning up...');
+	// App.Databases.UserDatabase.close();
 	process.exit();
 });
 

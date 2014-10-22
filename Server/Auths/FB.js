@@ -5,19 +5,15 @@ App.Modules.PassPort.use(new App.Auths.Facebook.Strategy({
 	clientSecret: App.Auths.Facebook.ClientInfo.Secret,
 	callbackURL: App.Auths.Facebook.ClientInfo.Redirect
 }, function(AccessToken, RefreshToken, Profile, Done) {
-	// Get the primary email.
+	// Get the primary email and unique identifier.
 	Profile.Email = Profile.emails[0].value;
-
-	// Get the unique identifier.
 	Profile.Identifier = Profile.Id = Profile.id;
 
 	// Get other profile info.
-	App.Databases.UserDatabase.find({ Id: Profile.Id }).toArray(function(Error, FoundInfo) {
+	App.Databases.UserDatabase.findOne({ Id: Profile.Id }, function(Error, FoundInfo) {
 		if (Error) {
 			App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 		}
-
-		FoundInfo = FoundInfo[0];
 
 		if (FoundInfo) {
 			Profile.Username = FoundInfo.Username;
@@ -25,16 +21,30 @@ App.Modules.PassPort.use(new App.Auths.Facebook.Strategy({
 			Profile.Deaths = FoundInfo.Deaths;
 			Profile.Shots = FoundInfo.Shots;
 			Profile.Client = FoundInfo.Client;
+			Profile.Place = FoundInfo.Place;
+
+			return Done(null, Profile);
 		} else {
-			App.Databases.UserDatabase.insert({ Email: Profile.Email, Kills: 0, Deaths: 0, Shots: 0, Id: Profile.Id, Client: App.Vars.ClientCodes.Facebook });
+			App.Databases.UserDatabase.find({}).count(function(Error, Count) {
+				if (Error) {
+					App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+				}
 
-			Profile.Kills = 0;
-			Profile.Deaths = 0;
-			Profile.Shots = 0;
-			Profile.Client = App.Vars.ClientCodes.Facebook;
+				Profile.Kills = 0;
+				Profile.Deaths = 0;
+				Profile.Shots = 0;
+				Profile.Client = App.Vars.ClientCodes.Facebook;
+				Profile.Place = Count + 1;
+
+				App.Databases.UserDatabase.insert({ Email: Profile.Email, Kills: 0, Deaths: 0, Shots: 0, Place: Count + 1, Id: Profile.Id, Client: App.Vars.ClientCodes.Facebook }, function(Error) {
+					if (Error) {
+						App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+					}
+				});
+
+				return Done(null, Profile);
+			});
 		}
-
-		return Done(null, Profile);
 	});
 }));
 

@@ -83,6 +83,9 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 		Socket.on('point::add', function() {
 			App.Console.Log(__filename, App.Utils.LineNumber, ('Point::Add (' + Session.passport.user.Username + ').').yellow);
 
+			// Update leaderboard.
+			App.Vars.Rooms[Session.passport.user.Room].Leaderboard[Session.passport.user.Username].Kills++;
+
 			// Increment kills.
 			Session.passport.user.Kills++;
 		});

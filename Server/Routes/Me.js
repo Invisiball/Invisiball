@@ -52,12 +52,12 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 				}));
 			} else {
 				// Check if username is taken.
-				App.Databases.UserDatabase.find({ Username: Response.req.query.NewUsername }).toArray(function(Error, Found) {
+				App.Databases.UserDatabase.findOne({ Username: Response.req.query.NewUsername }, function(Error, Found) {
 					if (Error) {
 						App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 					}
 
-					if (Found.length !== 0) { // Is taken.
+					if (Found) { // Is taken.
 						Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Finalize.html'.AssetPath, {
 							IsAuthenticated: true, // Is authenticated?
 							Me: Request.user, // Me

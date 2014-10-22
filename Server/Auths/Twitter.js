@@ -9,47 +9,59 @@ App.Modules.PassPort.use(new App.Auths.Twitter.Strategy({
 	Profile.Identifier = Profile.Id = Profile.id;
 
 	// Get other profile info.
-	App.Databases.UserDatabase.find({ Id: Profile.Id }).toArray(function(Error, Found) {
+	App.Databases.UserDatabase.findOne({ Id: Profile.Id }, function(Error, Found) {
 		if (Error) {
 			App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 		}
 
-		Found = Found[0];
-
 		if (Found) {
 			Profile.Username = Found.Username;
-			// Profile.Email = Found.Email;
+			Profile.Email = Found.Email || '';
 			Profile.Kills = Found.Kills;
 			Profile.Deaths = Found.Deaths;
 			Profile.Shots = Found.Shots;
 			Profile.Client = Found.Client;
+			Profile.Place = Found.Place;
+
+			return Done(null, Profile);
 		} else {
 			// Check if Twitter username is taken.
-				App.Databases.UserDatabase.find({ Username: Profile.username }).toArray(function(Error, _Found) {
-				if (_Found.length === 0) { // If is not taken, set username.
-					Profile.Username = Profile.username;
-
-					App.Databases.UserDatabase.insert({ Email: '', Username: Profile.Username, Kills: 0, Deaths: 0, Shots: 0, Id: Profile.Id, Client: App.Vars.ClientCodes.Twitter }, function(Error) {
-						if (Error) {
-							App.Console.Throw(__filename, App.Utils.LineNumber, Error);
-						}
-					});
-				} else { // Otherwise the user will have to pick another later.
-					App.Databases.UserDatabase.insert({ Email: '', Kills: 0, Deaths: 0, Shots: 0, Id: Profile.Id, Client: App.Vars.ClientCodes.Twitter }, function(Error) {
-						if (Error) {
-							App.Console.Throw(__filename, App.Utils.LineNumber, Error);
-						}
-					});
+			App.Databases.UserDatabase.findOne({ Username: Profile.username }, function(Error, _Found) {
+				if (Error) {
+					App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 				}
 
-				// Default.
-				Profile.Email = ''; // Twitter does not keep emails.
-				Profile.Kills = 0;
-				Profile.Deaths = 0;
-				Profile.Shots = 0;
-				Profile.Client = App.Vars.ClientCodes.Twitter;
+				App.Databases.UserDatabase.find({}).count(function(Error, Count) {
+					if (Error) {
+						App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+					}
 
-				return Done(null, Profile);
+					if (!_Found) { // If is not taken, set username.
+						Profile.Username = Profile.username;
+
+						App.Databases.UserDatabase.insert({ Email: '', Username: Profile.Username, Kills: 0, Deaths: 0, Shots: 0, Place: Count + 1, Id: Profile.Id, Client: App.Vars.ClientCodes.Twitter }, function(Error) {
+							if (Error) {
+								App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+							}
+						});
+					} else { // Otherwise the user will have to pick another later.
+						App.Databases.UserDatabase.insert({ Email: '', Kills: 0, Deaths: 0, Shots: 0, Place: Count + 1, Id: Profile.Id, Client: App.Vars.ClientCodes.Twitter }, function(Error) {
+							if (Error) {
+								App.Console.Throw(__filename, App.Utils.LineNumber, Error);
+							}
+						});
+					}
+
+					// Default.
+					Profile.Email = ''; // Twitter does not keep emails.
+					Profile.Kills = 0;
+					Profile.Deaths = 0;
+					Profile.Shots = 0;
+					Profile.Client = App.Vars.ClientCodes.Twitter;
+					Profile.Place = Count + 1;
+
+					return Done(null, Profile);
+				});
 			});
 		}
 	});

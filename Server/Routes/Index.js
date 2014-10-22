@@ -20,19 +20,23 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 	}));
 });
 
-// Get top 50 users.
+// Get top users.
 App.Apps.Express.get('/Leaderboard', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
-	App.Databases.UserDatabase.find({ Username: { $exists: true, $ne: '' } }, { limit: 50, sort: ['Kills', 'desc'] }).toArray(function(Error, Users) {
+	App.Databases.UserDatabase.find({ Username: { $exists: true, $ne: '' } }, { limit: 50, sort: [['Kills', 'desc']] }).toArray(function(Error, Users) {
 		if (Error) {
 			App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 		}
 
-		// Compile top 50 users.
+		// Compile top users.
 		for (var Iterator = 0; Iterator < Users.length; Iterator++) {
+			Users[Iterator].Place = Iterator + 1;
+
 			// Fix accuracy if wrong.
 			var Accuracy = Users[Iterator].Kills * 100 / Users[Iterator].Shots;
 
-			if (Accuracy.toString() === 'NaN') {
+			if (Accuracy === Infinity) {
+				Accuracy = 100;
+			} else if (Number.isNaN(Accuracy)) {
 				Accuracy = 0;
 			}
 
@@ -43,7 +47,7 @@ App.Apps.Express.get('/Leaderboard', App.Apps.Express.MiddleWare.CheckForMainten
 
 			if (Kdr === Infinity) {
 				Kdr = Users[Iterator].Kills;
-			} else if (Kdr.toString() === 'NaN') {
+			} else if (Number.isNaN(Kdr)) {
 				Kdr = 0;
 			}
 
@@ -70,11 +74,11 @@ App.Apps.Express.get('/SearchUsers', function(Request, Response) {
 	}
 
 	if (!Response.req.query.Query) { // If no query, send nothing.
-		res.send([]);
+		Response.send([]);
 	} else {
 		// Get all usernames like query.
 		/** @todo Fix this! */
-		App.Databases.UserDatabase.find({ Username: Response.req.query }).toArray(function(Error, Users) {
+		App.Databases.UserDatabase.find({ Username: Response.req.query.Query }, { sort: [['Kills', 'desc']] }).toArray(function(Error, Users) {
 			if (Error) { // Error!
 				App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 			}
@@ -85,8 +89,30 @@ App.Apps.Express.get('/SearchUsers', function(Request, Response) {
 					Users.splice(Iterator, 1);
 					Iterator--;
 				} else { // Remove personal information.
+					// Fix accuracy if wrong.
+					var Accuracy = Users[Iterator].Kills * 100 / Users[Iterator].Shots;
+
+					if (Accuracy.toString() === 'NaN') {
+						Accuracy = 0;
+					}
+
+					Users[Iterator].Accuracy = Accuracy.toFixed(2);
+
+					// Fix KDR if wrong.
+					var Kdr = Users[Iterator].Kills / Users[Iterator].Deaths;
+
+					if (Kdr === Infinity) {
+						Kdr = Users[Iterator].Kills;
+					} else if (Kdr.toString() === 'NaN') {
+						Kdr = 0;
+					}
+
+					Users[Iterator].Kdr = Kdr.toFixed(2);
+
 					delete Users[Iterator].Email;
 					delete Users[Iterator].Id;
+					delete Users[Iterator]._id;
+					delete Users[Iterator].Client;
 				}
 			}
 
@@ -99,7 +125,7 @@ App.Apps.Express.get('/SearchUsers', function(Request, Response) {
 // Get user profile.
 App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
 	// Get user data.
-	App.Databases.UserDatabase.find({ Username: Request.params.Username }).toArray(function(Error, Found) {
+	App.Databases.UserDatabase.findOne({ Username: Request.params.Username }, function(Error, Found) {
 		if (Error) { // Error!
 			App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 		}
@@ -111,8 +137,8 @@ App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForM
 			Err: Response.req.query.Error, // Error
 
 			IsViewingSelf: Request.user ? (Request.user.Username === Found[0].Username) : false, // Is viewing self?
-			DidNotFindUser: Found.length === 0, // Did not find user?
-			User: Found[0] // User found.
+			DidNotFindUser: !!Found, // Did not find user?
+			User: Found // User found.
 		}));
 	});
 });

@@ -1,11 +1,20 @@
 //=================== CONFIGS ====================
 
-App.Configs.Global.IsDebugging = false; /**< Is debugging? */
+App.Configs.Global.IsDebugging = true; /**< Is debugging? */
 App.Configs.Global.IsMaintaining = false; /**< Is maintaining? */
 
 App.Configs.Global.PID = parseInt(Math.random() * ((10000000 + 1) - 0) + 0); /**< The PID of this server. */
 
-App.Configs.Global.AdminSecret = App.Modules.Whirlpool(App.Configs.Global.PID).toString();
+App.Configs.Global.AdminSecret = function(gen_new) {
+	if (gen_new === 'set') {
+		App.Configs.Global.AdminSecret.__secret = App.Modules.Whirlpool(App.Configs.Global.PID + (+new Date)).toString();
+		return App.Configs.Global.AdminSecret.__secret;
+	} else if (gen_new === 'get') {
+		return App.Configs.Global.AdminSecret.__secret;
+	} else {
+		throw new Error('AdminSecret used incorrectly.');
+	}
+}
 
 App.Configs.Global.Address.Port = process.env.PORT || 80; /**< Port to listen to. */
 App.Configs.Global.Address.Url = ''; /**< Base URL to listen to. */
