@@ -13,6 +13,11 @@ This is just another 1st-person shooter game, but with a twist: All players are 
 <br>
 Instructions and tutorials will be added eventually.
 
+## Todos
++ [ ] Update all libaries.
++ [ ] Fix any old or deprecated code.
++ [ ] Run engine on server side for security.
+
 ## Features
 + [X] View player stats by going to `/Profile/[:username]`.
 + [X] View leaderboard by going to `/Leaderboard`.
