@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<% { %>
+			<%
+				var _opts = {
+					title: 'Leaderboard',
+					libs: [],
+					styles: []
+				};
+			%>
+			<% include partials/_head.ejs %>
+		<% } %>
+	</head>
+	<body>
+		<% include partials/_header.ejs %>
+		<div class="container">
+			<h1>Invisi<b>player</b>: <span id="username"><%= username %></span></h1>
+			<% if (!player) { %>
+				<b>Could not find player with username "<%= username %>".</b>
+			<% } else { %>
+				<table class="table table-hover">
+					<tbody>
+						<tr><td>Invisi<b>kills</b></td><td id="kills"><%= player.kills %></td></tr>
+						<tr><td>Invisi<b>deaths</b></td><td id="deaths"><%= player.deaths %></td></tr>
+						<tr><td>Invisi<b>KDR</b></td><td id="kdr"><%= player.kills === player.deaths ? 1 : player.kills / (player.deaths || 1) %></td></tr>
+					</tbody>
+				</table>
+			<% } %>
+		</div>
+
+		<% include partials/_outdated.ejs %>
+	</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "Invisiball",
+  "version": "0.4.0",
+  "description": "The FPS with a twist.",
+  "main": "invisiball.js",
+  "scripts": {
+    "test": "true"
+  },
+  "engines": {
+    "iojs": "1.1.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Invisiball/Invisiball.git"
+  },
+  "keywords": [
+    "fps",
+    "twist",
+    "invisiball"
+  ],
+  "author": "Invisiball",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Invisiball/Invisiball/issues"
+  },
+  "homepage": "https://github.com/Invisiball/Invisiball",
+  "dependencies": {
+    "body-parser": "^1.11.0",
+    "connect-mongo": "^0.7.0",
+    "cookie-parser": "^1.3.3",
+    "ejs": "^2.2.4",
+    "errorhandler": "^1.3.3",
+    "express": "^4.11.1",
+    "express-session": "^1.10.2",
+    "moment": "^2.9.0",
+    "mongoose": "^3.8.23",
+    "passport": "^0.2.1",
+    "passport-local": "^1.0.0",
+    "socket.io": "^1.3.2",
+    "xtend": "^4.0.0"
+  }
+}

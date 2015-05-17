@@ -1,0 +1,43 @@
+<meta charset="UTF-8">
+<meta name="author" content="Invisiball">
+<meta name="creator" content="Invisiball">
+<meta name="publisher" content="Invisiball">
+<meta name="description" content="Invisiball: The FPS With A Twist">
+<meta name="generator" content="EJS (http://www.embeddedjs.com/)">
+<meta name="keywords" content="invisiball,fps,twist,usandfriends">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+<title>Invisiball | <%= _opts.title %></title>
+<link rel="stylesheet" href="/css/utils/bootstrap.css">
+<link rel="stylesheet" href="/css/utils/jqueryui.css">
+<link rel="stylesheet" href="/css/utils/outdatedbrowser.css">
+<% for(var iter = 0, style = _opts.styles[iter]; iter < _opts.styles.length; ++iter, style = _opts.styles[iter]) { %>
+	<link rel="stylesheet" href="/css/<%- style %>.css">
+<% } %>
+<!--[if lt IE 9]>
+	<script src="/js/utils/html5shiv.js"></script>
+	<script src="/js/utils/respond.min.js"></script>
+<![endif]-->
+<script src="/js/utils/jquery.js"></script>
+<script src="/js/utils/jqueryui.js"></script>
+<script src="/js/utils/bootstrap.js"></script>
+<script src="/js/utils/outdatedbrowser.js"></script>
+<script>
+	$(document).ready(function() {
+		outdatedBrowser({
+			bgColor: '#f25648',
+			color: '#ffffff',
+			lowerThan: 'transform',
+			languagePath: ''
+		});
+	});
+</script>
+<% for(var iter = 0, library = _opts.libs[iter]; iter < _opts.libs.length; ++iter, library = _opts.libs[iter]) { %>
+	<% if (library === 'recaptcha') { %>
+		<script src="https://www.google.com/recaptcha/api.js"></script>
+	<% } else { %>
+		<script src="/js/<%- library %>.js"></script>
+	<% } %>
+<% } %>

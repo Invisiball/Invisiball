@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<% { %>
+			<%
+				var _opts = {
+					title: 'Home',
+					libs: [],
+					styles: ['index']
+				};
+			%>
+			<% include partials/_head.ejs %>
+		<% } %>
+	</head>
+	<body>
+		<% include partials/_header.ejs %>
+		<div class="container">
+			<h1>Invisiball - Home</h1>
+			<h3 id="error"><%= error %></h3>
+			<% if (user) { %>
+				<button type="submit" class="btn btn-default" style="margin-left: 10px;" onclick="window.location.href = '/logout';">Log Out</button>
+
+				<h2>Rooms: </h2>
+				<% if (rooms.length > 0) { %>
+					<% for (var iter = 0, room = rooms[iter]; iter < rooms.length; ++iter, room = rooms[iter]) { %>
+						<% if (room.password) { %>
+							<img src="/img/lock.png" style="height: 30px;">
+						<% } %>
+						<button type="submit" class="btn btn-default" title="Created by: '<%= room.creator.username %>'."><a href="/room/<%= room._id %>"><%= room.name %></a></button> <%= room.leaderboard.length %>
+					<% } %>
+					<br><br>
+				<% } else { %>
+					<b>No rooms.</b>
+					<br><br>
+				<% } %>
+
+				<h2><% if (rooms.length > 0) { %>Or c<% } else { %>C<% } %>reate a new one:</h2>
+
+				<form action="room/new" method="post">
+					<div>
+						<input name="name" type="text" class="form-control" placeholder="Room Name" style="display: inline-block;">
+						<input name="password" type="password" class="form-control" placeholder="Password" style="display: inline-block;">
+						<input name="max_players" type="text" class="form-control" placeholder="Max Player #" style="display: inline-block; max-width: 120px;">
+					</div>
+
+					<br>
+
+					<div>
+						<input name="mode" type="text" class="ghost-input" id="modeInput">
+						<div class="dropdown">
+							<button class="btn btn-default dropdown-toggle" type="button" id="modeDropDown" data-toggle="dropdown"><span id="modeName">Choose Mode</span> <span class="caret"></span></button>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="modeDropDown">
+								<li role="presentation" onclick="select_mode(this)" data-mode-pretty="Deathmatch" data-mode-raw="dm"><a role="menuitem" tabindex="-1" href="#">Deathmatch</a></li>
+								<li role="presentation" onclick="select_mode(this)" data-mode-pretty="Team Deathmatch" data-mode-raw="tdm"><a role="menuitem" tabindex="-1" href="#">Team Deathmatch</a></li>
+								<li role="presentation" onclick="select_mode(this)" data-mode-pretty="Capture the Flag" data-mode-raw="ctf"><a role="menuitem" tabindex="-1" href="#">Capture the Flag</a></li>
+							</ul>
+						</div>
+
+						@
+
+						<input name="map" type="text" class="ghost-input" id="mapInput">
+						<div class="dropdown">
+							<button class="btn btn-default dropdown-toggle" type="button" id="mapDropDown" data-toggle="dropdown"><span id="mapName">Choose Map</span> <span class="caret"></span></button>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="mapDropDown">
+								<li role="presentation" onclick="select_map(this)" data-map-pretty="Empty (Small)" data-map-raw="empty_small"><a role="menuitem" tabindex="-1" href="#">Empty (Small)</a></li>
+								<li role="presentation" onclick="select_map(this)" data-map-pretty="Empty (Medium)" data-map-raw="empty_medium"><a role="menuitem" tabindex="-1" href="#">Empty (Medium)</a></li>
+								<li role="presentation" onclick="select_map(this)" data-map-pretty="Empty (Large)" data-map-raw="empty_large"><a role="menuitem" tabindex="-1" href="#">Empty (Large)</a></li>
+								<li role="presentation" onclick="select_map(this)" data-map-pretty="Mario" data-map-raw="mario"><a role="menuitem" tabindex="-1" href="#">Mario</a></li>
+							</ul>
+						</div>
+					</div>
+
+					<br>
+
+					<div>
+						<button type="submit" class="btn btn-default" onclick="new_room();"><b>Create Room</b></button>
+					</div>
+				</form>
+
+				<br> <br> <br>
+			<% } else { %>
+				<button type="submit" class="btn btn-default" onclick="window.location.href='/login';">Log In</button>
+				<button type="submit" class="btn btn-default" onclick="window.location.href='/signup';">Sign Up</button>
+			<% } %>
+		</div>
+
+		<% if (user) { %>
+			<script src="/js/index.js"></script>
+		<% } %>
+
+		<% include partials/_outdated.ejs %>
+	</body>
+</html>

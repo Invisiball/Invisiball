@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<% { %>
+			<%
+				var _opts = {
+					title: 'Play',
+					libs: ['socket.io/socket.io', 'game/three', 'game/cannon', 'game/threeutils', 'game/pointerlock', 'game/fullscreen', 'game/stats'],
+					styles: ['game']
+				};
+			%>
+			<% include partials/_head.ejs %>
+		<% } %>
+	</head>
+	<body>
+		<div id="container">
+			<div id="blocker">
+				<div id="instructions">
+					<span id="title" style="font-size:40px;">Click to play.</span>
+					<br>
+					<span id="body">(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)</span>
+				</div>
+			</div>
+
+			<div class="hair" style="width: 10px; height: 2px; top: 50%; left: calc( 50% - 4px ); z-index: 1;"></div>
+			<div class="hair" style="height: 10px; width: 2px; left: 50%; top: calc( 50% - 4px ); z-index: 1;"></div>
+
+			<div id="userinfo">
+				Score: <span id="score">0</span>
+				&nbsp; &nbsp; &nbsp; &nbsp;
+				Deaths: <span id="death">0</span>
+				&nbsp; &nbsp; &nbsp; &nbsp;
+				Room Name: <span>{{RoomData.Name}}</span>
+				&nbsp; &nbsp; &nbsp; &nbsp; Ammo: <span id="ammo">10</span>
+				<span style="position: absolute; right: 3px;"><a href="/">Invisiball</a></span>
+			</div>
+
+			<div id="leaderboard">
+				<h3>Leaderboard</h3>
+				<table style="width: 100%;">
+					<tr>
+						<th><b>Username</b></th>
+						<th><b>Kills</b></th>
+						<th><b>Deaths</b></th>
+					</tr>
+				</table>
+			</div>
+
+			<ul id="update"></ul>
+		</div>
+
+		<audio>
+			<source src="/Sounds/Hit.ogg" type="audio/ogg">
+			<source src="/Sounds/Hit.mp3" type="audio/mpeg">
+		</audio>
+		<audio>
+			<source src="/Sounds/Shot.ogg" type="audio/ogg">
+			<source src="/Sounds/Shot.mp3" type="audio/mpeg">
+		</audio>
+
+		<script type="application/x-glsl" id="sky-vertex">
+			varying vec2 vUV;
+
+			void main() {
+				vUV = uv;
+				vec4 pos = vec4(position, 1.0);
+				gl_Position = projectionMatrix * modelViewMatrix * pos;
+			}
+		</script>
+
+		<script type="application/x-glsl" id="sky-fragment">
+			uniform sampler2D texture;
+			varying vec2 vUV;
+
+			void main() {
+				vec4 sample = texture2D(texture, vUV);
+				gl_FragColor = vec4(sample.xyz, sample.w);
+			}
+		</script>
+
+		<script>
+			var user_data = <%- JSON.stringify(user) %>;
+			var room_data = <%- JSON.stringify(room) %>;
+			var debugging = "<%= debug %>";
+		</script>
+		<script src="/js/game.js#<%= room.mode %>"></script>
+
+		<% include partials/_outdated.ejs %>
+	</body>
+</html>

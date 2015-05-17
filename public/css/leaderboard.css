@@ -1,0 +1,26 @@
+body {
+	margin: 0;
+	font-family: arial;
+}
+
+#form-container {
+	min-width: 50px;
+	max-width: 300px;
+}
+
+#searchdiv {
+	position: relative;
+	height: 34px;
+	width: 100%;
+}
+
+#search {
+	padding-right: 201px;
+}
+
+#searchbtn {
+	position: absolute;
+	width: 200px;
+	top: 0px;
+	right: 0px;
+}

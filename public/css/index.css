@@ -1,0 +1,21 @@
+body {
+	margin: 0;
+	font-family: arial;
+}
+
+input {
+	max-width: 300px;
+	display: inline-block;
+}
+
+.ghost-input {
+	display: none;
+}
+
+.dropdown {
+	display: inline;
+}
+
+#error {
+	color: red;
+}

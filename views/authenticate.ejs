@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<% { %>
+			<%
+				var _opts = {
+					title: 'Log In',
+					libs: [],
+					styles: ['authenticate']
+				};
+			%>
+			<% include partials/_head.ejs %>
+		<% } %>
+	</head>
+	<body>
+		<% include partials/_header.ejs %>
+		<div class="container">
+			<h1>Invisiball - <% if (action === 'login') { %>Log In<% } else { %>Sign Up<% } %></h1>
+			<h3 id="error"><%= error %></h3>
+			<div id="form-container">
+				<form action="<%= action %>" method="post">
+					<% if (action === 'login') { %>
+						<input name="username" type="text" class="form-control" placeholder="Username">
+						<br>
+						<input name="password" type="password" class="form-control" placeholder="Password">
+						<br>
+						<button type="submit" class="btn btn-default">Log In</button>
+					<% } else { %>
+						<input name="username" type="text" class="form-control" placeholder="Username">
+						<br>
+						<input name="password" type="password" class="form-control" placeholder="Password">
+						<br>
+						<button type="submit" class="btn btn-default" onclick="window.location.href='/signup';">Sign Up</button>
+					<% } %>
+				</form>
+			</div>
+		</div>
+
+		<% include partials/_outdated.ejs %>
+	</body>
+</html>

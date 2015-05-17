@@ -1,0 +1,13 @@
+body {
+	margin: 0;
+	font-family: arial;
+}
+
+#form-container {
+	min-width: 50px;
+	max-width: 300px;
+}
+
+#error {
+	color: red;
+}

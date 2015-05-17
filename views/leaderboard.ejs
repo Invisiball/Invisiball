@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<% { %>
+			<%
+				var _opts = {
+					title: 'Leaderboard',
+					libs: [],
+					styles: ['leaderboard']
+				};
+			%>
+			<% include partials/_head.ejs %>
+		<% } %>
+	</head>
+	<body>
+		<% include partials/_header.ejs %>
+		<div class="container">
+			<h1>Invisi<i>leaders</i>:</h1>
+			<br>
+			<% if (!leaders) { %>
+				<h3>No players yet!</h3>
+			<% } else { %>
+				<div id="searchdiv">
+					<input id="search" placeholder="Search Players" class="form-control">
+					<button id="searchbtn" type="submit" class="btn btn-default" onclick="query($('#search').val());">Search!</button>
+				</div>
+				<br> <br>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th data-sortable="true">#</th>
+							<th data-sortable="true">Invisi<i>player</i></th>
+							<th data-sortable="true">Invisi<i>kills</i></th>
+							<th data-sortable="true">Invisi<i>deaths</i></th>
+							<!-- <th data-sortable="true">Invisi<i>shots</i></th> -->
+							<!-- <th data-sortable="true">Invisi<i>accuracy</i></th> -->
+							<th data-sortable="true">Invisi<i>KDR</i></th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (var iter = 0, leader = leaders[iter]; iter < leaders.length; ++iter, leader = leaders[iter]) { %>
+							<tr>
+								<td><%= iter + 1 %></td>
+								<td><a href="/profile/<%= leader.username %>"><%= leader.username %></a></td>
+								<td><%= leader.kills %></td>
+								<td><%= leader.deaths %></td>
+								<!-- <td>{{User.Shots}}</td> -->
+								<!-- <td>{{User.Accuracy}}%</td> -->
+								<td><%= leader.kills === leader.deaths ? 1 : leader.kills / (leader.deaths || 1) %></td>
+							</tr>
+						<% } %>
+					</tbody>
+				</table>
+			<% } %>
+		</div>
+		<script src="/js/leaderboard.js"></script>
+
+		<% include partials/_outdated.ejs %>
+	</body>
+</html>
