@@ -1,6 +1,6 @@
 {
   "name": "invisiball",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A FPS with a twist.",
   "main": "Server.js",
   "scripts": {
