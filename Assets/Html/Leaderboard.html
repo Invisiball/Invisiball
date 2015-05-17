@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
 	<head>
+		{% include './Bits/MetaHead.html' %}
 		<title>Invisiball: The FPS With A Twist! | Leaderboard</title>
+
 		{% include './Bits/CssHead.html' %}
 		<link href="/Css/Leaderboard.css" rel="stylesheet">
+
 		{% include './Bits/JsHead.html' %}
 	</head>
 	<body>
@@ -22,13 +25,13 @@
 				<table class="table table-hover">
 					<thead>
 						<tr>
-							<th>#</th>
-							<th>Invisi<i>player</i></th>
-							<th>Invisi<i>kills</i></th>
-							<th>Invisi<i>deaths</i></th>
-							<th>Invisi<i>shots</i></th>
-							<th>Invisi<i>accuracy</i></th>
-							<th>Invisi<i>KDR</i></th>
+							<th data-sortable="true">#</th>
+							<th data-sortable="true">Invisi<i>player</i></th>
+							<th data-sortable="true">Invisi<i>kills</i></th>
+							<th data-sortable="true">Invisi<i>deaths</i></th>
+							<th data-sortable="true">Invisi<i>shots</i></th>
+							<th data-sortable="true">Invisi<i>accuracy</i></th>
+							<th data-sortable="true">Invisi<i>KDR</i></th>
 						</tr>
 					</thead>
 					<tbody>

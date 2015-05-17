@@ -1,4 +1,4 @@
-(function(){
+// (function(){
 	/**
 	 * Returns a random number between and including min and max.
 	 * @param min Minimum number to return.
@@ -54,6 +54,30 @@
 	}
 
 	/**
+	 * Creates a cube map.
+	 * @param Data JSON data from blender map.
+	 */
+	function addCubeMap(data) {
+		const SCALE_SIZE = 2;
+
+		for (var k in data.objects) {
+			var object_data = data.objects[k];
+
+			var objectBody = new CANNON.Body({ mass: 0 });
+			var objectShape = new CANNON.Box(new CANNON.Vec3(object_data.scale[0] * SCALE_SIZE, object_data.scale[1] * SCALE_SIZE, object_data.scale[2] * SCALE_SIZE));
+			objectBody.addShape(objectShape);
+			objectBody.position.set(object_data.position[0] * SCALE_SIZE, object_data.position[1] * SCALE_SIZE, object_data.position[2] * SCALE_SIZE);
+			objectBody.quaternion.set(object_data.quaternion[0], object_data.quaternion[1], object_data.quaternion[2], object_data.quaternion[3]);
+			world.add(objectBody);
+
+			var objectMesh = THREEUtils.Shape2Mesh(objectBody, new THREE.MeshLambertMaterial({ color: new THREE.Color(data.materials[object_data.material].color) }));
+			objectMesh.position.set(object_data.position[0] * SCALE_SIZE, object_data.position[1] * SCALE_SIZE, object_data.position[2] * SCALE_SIZE);
+			objectMesh.quaternion.set(object_data.quaternion[0], object_data.quaternion[1], object_data.quaternion[2], object_data.quaternion[3]);
+			scene.add(objectMesh);
+		}
+	}
+
+	/**
 	 * Adds an update to the list for the player to see.
 	 * @param message The message to send.
 	 * @param shouldRemove True if should remove last child, false if not.
@@ -63,6 +87,7 @@
 			$('#update').children().first().fadeOut(1000);
 			setTimeout(function() { $('#update').children().first().remove(); }, 1000);
 		}
+
 		$('#update').append(message).scrollTop(9999999999);
 	}
 
@@ -121,7 +146,7 @@
 
 	var socket = io.connect('/');
 
-	var sphereShape, sphereBody, world, physicsMaterial, balls = [], ballMeshes = [];
+	var sphereShape, sphereBody, world, length, physicsMaterial, balls = [], ballMeshes = [];
 
 	var ONE_SECOND = 60, /**< Time for 1 second to go through. */
 		MAX_TIME_LIMIT = 1.75 * ONE_SECOND, /**< Seconds until balls disappear. */
@@ -129,9 +154,11 @@
 
 	var BALLS_OF_USER = 0; /**< Number of balls that the user owns. */
 
-	var camera, scene, renderer, stats,
+	var camera, scene, renderer, postprocessor, stats,
 		geometry, material, mesh,
 		loader, controls, time = Date.now();
+
+	const delta = 1 / 60;
 
 	var lights = [], /**< Light data. */
 		flashlight; /**< Player's flashlight. */
@@ -147,9 +174,6 @@
 				controls.enabled = true;
 				blocker.style.display = 'none';
 			} else {
-				$('#title').html('Click to play.');
-				$('#body').html('(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK/SHIFT/CRTL = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)');
-
 				controls.enabled = false;
 
 				blocker.style.display = '-webkit-box';
@@ -217,7 +241,7 @@
 
 		var solver = new CANNON.GSSolver();
 
-		world.defaultContactMaterial.contactEquationStiffness = 1e9;
+		world.defaultContactMaterial.contactEquationStiffness = 1e+9;
 		world.defaultContactMaterial.contactEquationRegularizationTime = 4;
 
 		solver.iterations = 7;
@@ -243,7 +267,7 @@
 		sphereShape = new CANNON.Sphere(radius);
 		sphereBody = new CANNON.Body({ mass: mass });
 		sphereBody.addShape(sphereShape);
-		sphereBody.position.set(RandomNumber(5, 23), 10, RandomNumber(5, 23));
+		sphereBody.position.set(RandomNumber(-length / 2 + 5, length / 2 - 5), 10, RandomNumber(-length / 2 + 5, length / 2 - 5));
 		sphereBody.linearDamping = 0.9;
 		world.add(sphereBody);
 	}
@@ -264,22 +288,9 @@
 		// Create scene.
 		scene = new THREE.Scene();
 
-		// Create fog.
-		scene.fog = new THREE.Fog(0x000000, 0, 500);
-
 		// Add an ambient light.
-		var ambient = new THREE.AmbientLight(0x111111);
+		var ambient = new THREE.AmbientLight(0x404040);
 		scene.add(ambient);
-
-		// Add more lights.
-		lights.push(createNewLight(0, 60, 0));
-		scene.add(lights[0]);
-		// lights.push(createNewLight(-50, 60, 100));
-		// lights.push(createNewLight(-50, 60, -100));
-		// lights.push(createNewLight(100, 60, 0));
-		// for (var iter = 0; iter < lights.length; iter++) {
-		// 	scene.add(lights[iter]);
-		// }
 
 		// Add flashlight.
 		flashlight = new THREE.PointLight(0xFFFFFF, 0.7, 15);
@@ -291,10 +302,11 @@
 
 		// Add collision for balls and player.
 		sphereBody.addEventListener('collide', function(e) {
-			if (e.contact.bi.type === CANNON.Shape.types.SPHERE && (e.contact.bi.userData && e.contact.bi.userData.name !== user_data.username) && Date.now() - lastTimeKilled > 500) {
-				sphereBody.position.set(RandomNumber(5, 100), 10, RandomNumber(5, 100));
+			if (e.body.type === CANNON.Shape.types.SPHERE && (e.body.userData && e.body.userData.name !== user_data.username) && Date.now() - lastTimeKilled > 500) {
+				sphereBody.velocity.set(0, 0, 0);
+				sphereBody.position.set(RandomNumber(5, 23), 10, RandomNumber(5, 23));
 
-				socket.emit('score::add', e.contact.bi.userData.name);
+				socket.emit('score::add', e.body.userData.name);
 
 				if (toggle.allowsSound) {
 					$('audio')[0].play();
@@ -311,44 +323,74 @@
 		bottomCatcherBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 		world.add(bottomCatcherBody);
 
+		// Create building.
+		switch (room_data.Map) {
+			case 'empty_small': {
+				length = 50;
+
+				lights.push(createNewLight(0, 60, 0));
+			} break;
+
+			case 'empty_medium': {
+				length = 125;
+
+				lights.push(createNewLight(0, 60, 0));
+			} break;
+
+			case 'empty_large': {
+				length = 300;
+
+				lights.push(createNewLight(0, 60, 0));
+				lights.push(createNewLight(-60, 60, 100));
+				lights.push(createNewLight(-60, 60, -100));
+				lights.push(createNewLight(60, 60, 100));
+				lights.push(createNewLight(60, 60, -100));
+			} break;
+
+			case 'mario': {
+				$.getJSON('/Meshes/Mario/Mario.json', addCubeMap);
+
+				length = 125;
+
+				lights.push(createNewLight(0, 60, 0));
+			} break;
+		}
+
+		// function groundMaker(i) {
+		// 	return Math.cos(i / 8 * Math.PI * 2);
+		// }
+
 		// var groundMatrix = [];
-		// for (var i = 0; i < 4; i++) {
+		// for (var i = 0; i < 100; i++) {
 		// 	groundMatrix.push([]);
-		// 	for (var j = 0; j < 4; j++) {
-		// 		groundMatrix[i].push(Math.cos(i / 8 * Math.PI * 2) * Math.cos(j / 8 * Math.PI * 2));
-		// 	}
+		// 	for (var j = 0; j < 100; j++) {
+		// 		groundMatrix[i].push(3 * groundMaker(i) * groundMaker(j));
+		//	}
 		// }
 
 		// // Create beautiful floor.
 		// groundShape = new CANNON.Heightfield(groundMatrix, {
-		// 	elementSize: 10
+		// 	elementSize: 5
 		// });
 
 		// groundBody = new CANNON.Body({ mass: 0 });
 		// groundBody.addShape(groundShape);
-		// groundBody.position.set(0, 1, 0);
+		// groundBody.position.set(-400, 5, 200);
 		// groundBody.quaternion.set(-Math.SQRT1_2, 0, 0, Math.SQRT1_2);
 		// world.add(groundBody);
 
 		// groundMesh = THREEUtils.Shape2Mesh(groundBody, new THREE.MeshLambertMaterial({ color: 0xDDDDDD }));
-		// groundMesh.position.set(0, 1, 0);
+		// groundMesh.position.set(-400, 5, 200);
 		// groundMesh.rotation.x = -Math.PI / 2;
 		// scene.add(groundMesh);
 
-		// for (var i = 0; i < 4 - 1; i++) {
-		// 	for (var j = 0; j < 4 - 1; j++) {
-		// 		for (var k = 0; k < 2; k++) {
-		// 			groundShape.getConvexTrianglePillar(i, j, !!k);
-		// 			var convexBody = new CANNON.Body({ mass: 0 });
-		// 			convexBody.addShape(groundShape.pillarConvex);
-		// 			groundBody.pointToWorldFrame(groundShape.pillarOffset, convexBody.position);
-		// 			world.add(convexBody);
-		// 		}
-		// 	}
-		// }
+		// Add more lights.
+		for (var iter = 0; iter < lights.length; iter++) {
+			scene.add(lights[iter]);
+		}
 
 		// Create floor geometry.
-		geometry = new THREE.PlaneGeometry(50, 50, 50, 50);
+		geometry = new THREE.PlaneGeometry(length, length, 50, 50);
 		geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 
 		// Create floor material.
@@ -374,7 +416,7 @@
 		});
 		planeXmin.addShape(planeShapeXmin);
 		planeXmin.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
-		planeXmin.position.set(-25, 0, 0);
+		planeXmin.position.set(-length / 2, 0, 0);
 		world.add(planeXmin);
 
 		// Plane +x
@@ -382,7 +424,7 @@
 		var planeXmax = new CANNON.Body({ mass: 0, material: stone });
 		planeXmax.addShape(planeShapeXmax);
 		planeXmax.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-		planeXmax.position.set(25, 0, 0);
+		planeXmax.position.set(length / 2, 0, 0);
 		world.add(planeXmax);
 
 		// Plane -z
@@ -390,7 +432,7 @@
 		var planeZmin = new CANNON.Body({ mass: 0, material: stone });
 		planeZmin.addShape(planeShapeZmin);
 		planeZmin.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), -Math.PI / 2);
-		planeZmin.position.set(0, 0, -25);
+		planeZmin.position.set(0, 0, -length / 2);
 		world.add(planeZmin);
 
 		// Plane +z
@@ -398,44 +440,48 @@
 		var planeZmax = new CANNON.Body({ mass: 0, material: stone });
 		planeZmax.addShape(planeShapeZmax);
 		planeZmax.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI);
-		planeZmax.position.set(0, 0, 25);
+		planeZmax.position.set(0, 0, length / 2);
 		world.add(planeZmax);
 
 		// ===== End Walls ===== //
 
-		// Create building.
-		$.getJSON('/Meshes/Building/Building.json', function(data) {
-			for (var k in data.objects) {
-				var object_data = data.objects[k];
+		// ===== Start SkyBox ===== //
 
-				var objectBody = new CANNON.Body({ mass: 0 });
-				var objectShape = new CANNON.Box(new CANNON.Vec3(object_data.scale[0] * 2, object_data.scale[1] * 2, object_data.scale[2] * 2));
-				objectBody.addShape(objectShape);
-				objectBody.position.set(object_data.position[0] * 2, object_data.position[1] * 2, object_data.position[2] * 2);
-				objectBody.quaternion.set(object_data.quaternion[0], object_data.quaternion[1], object_data.quaternion[2], object_data.quaternion[3]);
-				world.add(objectBody);
-
-				var objectMesh = THREEUtils.Shape2Mesh(objectBody, new THREE.MeshLambertMaterial({ color: 0xDDDDDD }));
-				objectMesh.position.set(object_data.position[0] * 2, object_data.position[1] * 2, object_data.position[2] * 2);
-				objectMesh.quaternion.set(object_data.quaternion[0], object_data.quaternion[1], object_data.quaternion[2], object_data.quaternion[3]);
-				scene.add(objectMesh);
-			}
+		var sbGeometry = new THREE.SphereGeometry(800, 60, 40);
+		var sbUniforms = { texture: { type: 't', value: THREE.ImageUtils.loadTexture('/Images/Galaxy.jpg') } };
+		var sbMaterial = new THREE.ShaderMaterial({
+			uniforms:		sbUniforms,
+			vertexShader:	document.getElementById('sky-vertex').textContent,
+			fragmentShader:	document.getElementById('sky-fragment').textContent
 		});
+
+		skyBox = new THREE.Mesh(sbGeometry, sbMaterial);
+		skyBox.scale.set(-1, 1, 1);
+		skyBox.rotation.order = 'XZY';
+		scene.add(skyBox);
+
+		// ===== End SkyBox ===== //
 
 		// Create renderer.
 		renderer = new THREE.WebGLRenderer();
 		renderer.shadowMapEnabled = true;
 		renderer.shadowMapSoft = true;
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.setClearColor(scene.fog.color, 1);
+		renderer.setClearColor(0x0, 1);
 		document.body.appendChild(renderer.domElement);
+
+		// Create post-processor.
+		postprocessor = new THREE.EffectComposer(renderer);
+		postprocessor.addPass(new THREE.RenderPass(scene, camera));
+
+		glitchPass = new THREE.GlitchPass();
+		glitchPass.renderToScreen = true;
+		// glitchPass.goWild = true;
+		postprocessor.addPass(glitchPass);
 
 		// Create stats.
 		stats = new Stats();
-		$(stats.domElement).css('position', 'absolute')
-						   .css('bottom', '15px')
-						   .css('left', '5px')
-						   .attr('id', 'stats');
+		$(stats.domElement).css({ 'position': 'absolute', 'bottom': '15px', 'left': '5px' }).attr('id', 'stats');
 		$('#container').append(stats.domElement);
 
 		// Create resize event listener.
@@ -452,7 +498,7 @@
 	function animate() {
 		// Animate scene / world.
 		requestAnimationFrame(animate);
-		world.step(1 / 60);
+		world.step(delta);
 
 		// Update ball positions
 		for(var i = 0; i < balls.length; i++) {
@@ -471,8 +517,6 @@
 			} else {
 				ballMeshes[i].position.copy(balls[i][0].position);
 				ballMeshes[i].quaternion.copy(balls[i][0].quaternion);
-				// balls[i][0].position.copy(ballMeshes[i].position);
-				// balls[i][0].quaternion.copy(ballMeshes[i].quaternion);
 				balls[i][1]++;
 			}
 		}
@@ -480,9 +524,10 @@
 		// Set flashlight.
 		flashlight.position = sphereBody.position;
 
-		// Update controls, scene, camera, time, and stats
+		// Update controls, scene, camera, postprocessor, time, and stats.
 		controls.update(Date.now() - time);
-		renderer.render(scene, camera);
+		// renderer.render(scene, camera);
+		postprocessor.render(delta);
 		stats.update();
 		time = Date.now();
 	}
@@ -634,37 +679,55 @@
 
 		// Connecting.
 		socket.on('connecting', function() {
-			update_log('<li style="color: green;">Connecting...</li>');
+			update_log('<li style="color: red;">Reconnecting is illegal. Reloading in 1 second.</li>');
+			try {
+				socket.disconnect();
+			} catch (e) {}
+			setTimeout(window.location.reload.bind(window.location), 1000);
 		});
 
 		// Disconnected.
 		socket.on('disconnect', function() {
-			update_log('<li style="color: red;">Disconnected!</li>');
+			update_log('<li style="color: red;">Disconnected! Reloading in 1 second.</li>');
+			try {
+				socket.disconnect();
+			} catch (e) {}
+			setTimeout(window.location.reload.bind(window.location), 1000);
 		});
 
 		// Connection failed.
 		socket.on('connect_failed', function() {
-			update_log('<li style="color: red;">Connecting failed...</li>');
+			update_log('<li style="color: red;">Connecting failed. Reloading in 1 second.</li>');
+			try {
+				socket.disconnect();
+			} catch (e) {}
+			setTimeout(window.location.reload.bind(window.location), 1000);
 		});
 
 		// An error occured.
 		socket.on('error', function(err) {
-			update_log('<li style="color: red;">Error! Please wait while we try to fix it...</li>');
-		});
-
-		// Reconnection failed.
-		socket.on('reconnect_failed', function() {
-			update_log('<li style="color: red;">Reconnection failed!</li>');
-		});
-
-		// Reconnected.
-		socket.on('reconnect', function() {
-			update_log('<li style="color: green;">Reconnected!</li>');
+			update_log('<li style="color: red;">Error [' + err.toString() + ']! Reloading in 1 second.</li>');
+			try {
+				socket.disconnect();
+			} catch (e) {}
+			setTimeout(window.location.reload.bind(window.location), 1000);
 		});
 
 		// Reconnecting.
 		socket.on('reconnecting', function() {
-			update_log('<li style="color: green;">Reconnecting...</li>');
+			try {
+				socket.disconnect();
+			} catch (e) {}
+			setTimeout(window.location.reload.bind(window.location), 1000);
+		});
+
+		// Reconnection failed.
+		socket.on('reconnect_failed', function() {
+			update_log('<li style="color: red;">Reconnecting failed. Reloading in 1 second.</li>');
+			try {
+				socket.disconnect();
+				socket.removeAllEventListeners();
+			} catch (e) {}
 		});
 
 		// A new ball must be created.
@@ -680,7 +743,7 @@
 
 			// Create the ball.
 			var tmp_material = new THREE.MeshLambertMaterial({ color: ballColors[name] });
-			THREE.ColorConverter.setHSV(tmp_material.color, 0, 0, 0.9);
+			// THREE.ColorConverter.setHSV(tmp_material.color, 0, 0, 0.9);
 
 			var ballBody = new CANNON.Body({ mass: 1 });
 			ballBody.addShape(ballShape);
@@ -757,6 +820,11 @@
 			socket.emit('user::create', room_data);
 		});
 
+		// The user already exists in this game.
+		socket.on('user::exists', function() {
+			window.location.href = '/?Error=You are already in this game.';
+		});
+
 		// A new user must be added.
 		socket.on('user::create', function(name) {
 			if (__DEBUG__) {
@@ -785,6 +853,9 @@
 			// Disconnect socket when leaving.
 			window.onbeforeunload = function() {
 				socket.disconnect();
+				window.setTimeout(function() {
+					socket.connect();
+				}, 1);
 				return 'Unfortunately, our servers are too slow to realize that you are leaving. Therefore, we are forced to put this message here to let them know what\'s going on. Please disregard this message and continue invisisurfing the Invisiweb. :)';
 			}
 		});
@@ -838,4 +909,4 @@
 			window.location.href = '/Maintenance?FromGame=true';
 		});
 	});
-})('Invisiball');
+// })('Invisiball');

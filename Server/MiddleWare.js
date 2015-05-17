@@ -5,13 +5,14 @@ App.Apps.Express.use('/Js', App.Modules.Express.static('/Js'.AssetPath));
 App.Apps.Express.use('/Images', App.Modules.Express.static('/Images'.AssetPath));
 App.Apps.Express.use('/Sounds', App.Modules.Express.static('/Sounds'.AssetPath));
 App.Apps.Express.use('/Meshes', App.Modules.Express.static('/Meshes'.AssetPath));
-App.Apps.Express.use('/Maps', App.Modules.Express.static('/Maps'.AssetPath));
 
 // Set up 3rd-party middleware.
-App.Apps.Express.use(App.Modules.Express.cookieParser());
-App.Apps.Express.use(App.Modules.Express.json());
-App.Apps.Express.use(App.Modules.Express.urlencoded());
-App.Apps.Express.use(App.Modules.Express.session({
+App.Apps.Express.use(App.Modules.CookieParser());
+App.Apps.Express.use(App.Modules.BodyParser.json());
+App.Apps.Express.use(App.Modules.BodyParser.urlencoded({ extended: true }));
+App.Apps.Express.use(App.Modules.Session({
+	resave: false,
+	saveUninitialized: false,
 	secret: 'yawk yawk yawk yawk', // Dat secret tho.
 	key: 'express.sid',
 	store: App.Databases.SessionStore

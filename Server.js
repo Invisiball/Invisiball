@@ -77,14 +77,19 @@ require('./Server/Apps/Cron');
 
 //========== START PROCESS EVENTS ==========
 
+process.on('uncaughtException', function(e) {
+	App.Console.Error(__filename, App.Utils.LineNumber, e.stack);
+	process.exit(1);
+});
+
 process.on('exit', function() {
 	App.Console.Error(__filename, App.Utils.LineNumber, 'Cleaning up...');
 	// App.Databases.UserDatabase.close();
-	process.exit();
+	process.exit(0);
 });
 
 process.on('SIGINT', function() {
-	process.exit();
+	process.exit(1);
 });
 
 //========== START ==========

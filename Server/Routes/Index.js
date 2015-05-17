@@ -4,7 +4,11 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 	if (Request.user) { // If user is logged in, compile rooms.
 		for (var RoomName in App.Vars.Rooms) {
 			if (App.Vars.Rooms.hasOwnProperty(RoomName)) {
-				RoomData.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
+				var PlayerNumber = App.Apps.SocketIO.sockets.clients(RoomName).length;
+
+				if (PlayerNumber < App.Vars.Rooms[RoomName].PlayerNumber) {
+					RoomData.push({ Name: RoomName, PlayerNumber: PlayerNumber, IsProtected: !!App.Vars.Rooms[RoomName].Password, Creator: App.Vars.Rooms[RoomName].Creator });
+				}
 			}
 		}
 	}
@@ -134,10 +138,11 @@ App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForM
 		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Profile.html'.AssetPath, {
 			IsAuthenticated: true, // Is authenticated?
 			Me: Request.user, // Me
+			Username: Request.params.Username, // Username requested
 			Err: Response.req.query.Error, // Error
 
-			IsViewingSelf: Request.user ? (Request.user.Username === Found[0].Username) : false, // Is viewing self?
-			DidNotFindUser: !!Found, // Did not find user?
+			IsViewingSelf: Request.user ? (Request.user.Username === (Found || {}).Username) : false, // Is viewing self?
+			DidNotFindUser: !Found, // Did not find user?
 			User: Found // User found.
 		}));
 	});

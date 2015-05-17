@@ -2,13 +2,15 @@
 App.Apps.Express.get('/Rooms', App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
 	// Compile room data.
 	var Rooms = [];
+
 	if (Request.user) { // If user is logged in compile rooms.
 		for (var RoomName in App.Vars.Rooms) { // Compile rooms.
 			if (App.Vars.Rooms.hasOwnProperty(RoomName)) {
-				Rooms.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password });
+				Rooms.push({ Name: RoomName, PlayerNumber: App.Apps.SocketIO.sockets.clients(RoomName).length, IsProtected: !!App.Vars.Rooms[RoomName].Password, Creator: App.Vars.Rooms[RoomName].Creator });
 			}
 		}
 	}
+
 	Response.send(Rooms);
 });
 
@@ -17,9 +19,11 @@ App.Apps.Express.get('/Play/:RoomName', App.Apps.Express.MiddleWare.Authenticate
 	if (!Request.user.Username) { // No username, force setup.
 		Response.redirect('/Me/Profile/Finalize');
 	} else { // Send page.
+		var Type = Response.req.query.Mode === 'dm' ? 'single' : 'team';
+
 		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Game.html'.AssetPath, {
 			Me: Request.user, //Me
-			RoomData: { Name: Request.params.RoomName, Password: Response.req.query.Password, PlayerNumber: Response.req.query.PlayerNumber || 1}, // Game Data
+			RoomData: { Name: Request.params.RoomName, Password: Response.req.query.Password || '', PlayerNumber: Response.req.query.PlayerNumber || 1, Mode: Response.req.query.Mode || '', Map: Response.req.query.Map || '', Type: Type }, // Game Data
 			IsDebugging: App.Configs.Global.IsDebugging // Is debugging?
 		}));
 	}

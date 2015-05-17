@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
 	<head>
+		{% include './Bits/MetaHead.html' %}
 		<title>Invisiball: The FPS With A Twist! | Play</title>
+
 		{% include './Bits/CssHead.html' %}
 		<link href="/Css/Game.css" rel="stylesheet">
+
 		{% include './Bits/JsHead.html' %}
 		<script src="/Js/Utils/Three.js"></script>
 		<script src="/Js/Utils/Cannon.js"></script>
@@ -22,8 +25,10 @@
 					<span id="body">(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)</span>
 				</div>
 			</div>
+
 			<div class="hair" style="width: 10px; height: 2px; top: 50%; left: calc( 50% - 4px ); z-index: 1;"></div>
 			<div class="hair" style="height: 10px; width: 2px; left: 50%; top: calc( 50% - 4px ); z-index: 1;"></div>
+
 			<div id="userinfo">
 				Score: <span id="score">0</span>
 				&nbsp; &nbsp; &nbsp; &nbsp;
@@ -31,8 +36,9 @@
 				&nbsp; &nbsp; &nbsp; &nbsp;
 				Room Name: <span>{{RoomData.Name}}</span>
 				&nbsp; &nbsp; &nbsp; &nbsp; Ammo: <span id="ammo">10</span>
-				<span style="position: absolute; right: 3px;"><a href="https://github.com/Usandfriends/ThreeJSApp">Invisiball</a></span>
+				<span style="position: absolute; right: 3px;"><a href="/">Invisiball</a></span>
 			</div>
+
 			<div id="leaderboard">
 				<h3>Leaderboard</h3>
 				<table style="width: 100%;">
@@ -43,8 +49,10 @@
 					</tr>
 				</table>
 			</div>
+
 			<ul id="update"></ul>
 		</div>
+
 		<audio>
 			<source src="/Sounds/Hit.ogg" type="audio/ogg">
 			<source src="/Sounds/Hit.mp3" type="audio/mpeg">
@@ -53,6 +61,27 @@
 			<source src="/Sounds/Shot.ogg" type="audio/ogg">
 			<source src="/Sounds/Shot.mp3" type="audio/mpeg">
 		</audio>
+
+		<script type="application/x-glsl" id="sky-vertex">
+			varying vec2 vUV;
+
+			void main() {
+				vUV = uv;
+				vec4 pos = vec4(position, 1.0);
+				gl_Position = projectionMatrix * modelViewMatrix * pos;
+			}
+		</script>
+
+		<script type="application/x-glsl" id="sky-fragment">
+			uniform sampler2D texture;
+			varying vec2 vUV;
+
+			void main() {
+				vec4 sample = texture2D(texture, vUV);
+				gl_FragColor = vec4(sample.xyz, sample.w);
+			}
+		</script>
+
 		<script>
 			const user_data = Object.freeze({
 					username: '{{Me.Username}}',
@@ -61,14 +90,19 @@
 					kills: {{Me.Kills}},
 					deaths: {{Me.Deaths}},
 					id: '{{Me.Id}}'
-				  }),
-				  room_data = Object.freeze({
+				}),
+				room_data = Object.freeze({
 					Name: '{{RoomData.Name}}',
 					Password: '{{RoomData.Password}}',
-					PlayerNumber: {{RoomData.PlayerNumber}}
-				  }),
-				  __DEBUG__ = {{IsDebugging}};
+					PlayerNumber: {{RoomData.PlayerNumber}},
+					Mode: '{{RoomData.Mode}}',
+					Map: '{{RoomData.Map}}',
+					Type: '{{RoomData.Type}}'
+				}),
+				__DEBUG__ = {{IsDebugging}};
 		</script>
-		<script src="/Js/Game.js"></script>
+		<script src="/Js/Game.js#{{RoomData.Mode}}"></script>
+
+		{% include './Bits/OutdatedBrowser.html' %}
 	</body>
 </html>

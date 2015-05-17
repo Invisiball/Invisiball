@@ -26,3 +26,7 @@ input {
 #max_players {
 	max-width: 110px;
 }
+
+.dropdown {
+	display: inline;
+}

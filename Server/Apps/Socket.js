@@ -19,6 +19,9 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 				App.Vars.Rooms[RoomData.Name] = RoomData;
 				App.Vars.Rooms[RoomData.Name].Creator = Session.passport.user.Username;
 				App.Vars.Rooms[RoomData.Name].Leaderboard = {};
+			} else if (App.Vars.Rooms[RoomData.Name].Leaderboard[Session.passport.user.Username]) {
+				// User already exists.
+				return Socket.emit('user::exists');
 			}
 
 			// Add user to leaderboard.
@@ -29,7 +32,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 
 			// Join the room.
 			Socket.join(RoomData.Name);
-			Session.passport.user.Room = RoomData.Name;
+			Session.passport.user.RoomData = { Map: RoomData.Map, Mode: RoomData.Mode, Name: RoomData.Name };
 			Session.passport.user.IsPlaying = true;
 
 			// Send message that user joined the room.
@@ -47,11 +50,11 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 		// User is requesting to send a message.
 		Socket.on('user::chat', function(Message) {
 			// Send message to room.
-			App.Apps.SocketIO.sockets.in(Session.passport.user.Room).emit('user::chat', Session.passport.user.Username, Message);
+			App.Apps.SocketIO.sockets.in(Session.passport.user.RoomData.Name).emit('user::chat', Session.passport.user.Username, Message);
 		});
 
 		// Socket.on('pos::set', function(PlayerPosition) {
-		// 	Socket.broadcast.to(Session.passport.user.Room).emit('pos::get', Session.passport.user.Username, PlayerPosition);
+		// 	Socket.broadcast.to(Session.passport.user.RoomData.Name).emit('pos::get', Session.passport.user.Username, PlayerPosition);
 		// });
 
 		// User is requesting a new ball.
@@ -59,7 +62,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 			App.Console.Log(__filename, App.Utils.LineNumber, ('Ball::Set (' + Session.passport.user.Username + ').').yellow);
 
 			// Send ball info to the room.
-			App.Apps.SocketIO.sockets.in(Session.passport.user.Room).emit('ball::set', Session.passport.user.Username, BallData);
+			App.Apps.SocketIO.sockets.in(Session.passport.user.RoomData.Name).emit('ball::set', Session.passport.user.Username, BallData);
 
 			// Increment shots.
 			Session.passport.user.Shots++;
@@ -70,10 +73,10 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 			App.Console.Log(__filename, App.Utils.LineNumber, ('Score::Add (' + KillerInfo + ', ' + Session.passport.user.Username + ').').yellow);
 
 			// Update leaderboard.
-			App.Vars.Rooms[Session.passport.user.Room].Leaderboard[Session.passport.user.Username].Deaths++;
+			App.Vars.Rooms[Session.passport.user.RoomData.Name].Leaderboard[Session.passport.user.Username].Deaths++;
 
 			// Send score add message.
-			App.Apps.SocketIO.sockets.in(Session.passport.user.Room).emit('score::add', KillerInfo, Session.passport.user.Username);
+			App.Apps.SocketIO.sockets.in(Session.passport.user.RoomData.Name).emit('score::add', KillerInfo, Session.passport.user.Username);
 
 			// Increment deaths.
 			Session.passport.user.Deaths++;
@@ -84,7 +87,7 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 			App.Console.Log(__filename, App.Utils.LineNumber, ('Point::Add (' + Session.passport.user.Username + ').').yellow);
 
 			// Update leaderboard.
-			App.Vars.Rooms[Session.passport.user.Room].Leaderboard[Session.passport.user.Username].Kills++;
+			App.Vars.Rooms[Session.passport.user.RoomData.Name].Leaderboard[Session.passport.user.Username].Kills++;
 
 			// Increment kills.
 			Session.passport.user.Kills++;
@@ -100,14 +103,14 @@ App.Apps.SocketIO.sockets.on('connection', function(Socket) {
 			}
 
 			// Tell others that user is leaving.
-			App.Apps.SocketIO.sockets.in(Session.passport.user.Room).emit('user::delete', Session.passport.user.Username);
+			App.Apps.SocketIO.sockets.in(Session.passport.user.RoomData.Name).emit('user::delete', Session.passport.user.Username);
 
 			// Leave the room.
-			Socket.leave(Session.passport.user.Room);
+			Socket.leave(Session.passport.user.RoomData.Name);
 
 			// If no one is left, destroy the room.
-			if (App.Apps.SocketIO.sockets.clients(Session.passport.user.Room).length === 0) {
-				delete App.Vars.Rooms[Session.passport.user.Room];
+			if (App.Apps.SocketIO.sockets.clients(Session.passport.user.RoomData.Name).length === 0) {
+				delete App.Vars.Rooms[Session.passport.user.RoomData.Name];
 			}
 
 			// Not playing anymore.

@@ -5,3 +5,14 @@
 <script src="/Js/Utils/JQuery.js"></script>
 <script src="/Js/Utils/JQueryUI.js"></script>
 <script src="/Js/Utils/Bootstrap.js"></script>
+<script src="/Js/Utils/OutdatedBrowser.js"></script>
+<script>
+	$(document).ready(function() {
+		outdatedBrowser({
+			bgColor: '#f25648',
+			color: '#ffffff',
+			lowerThan: 'transform',
+			languagePath: ''
+		});
+	});
+</script>

@@ -1,25 +1,47 @@
-lib-cov
-*.seed
-*.csv
-*.dat
-*.out
-*.pid
-*.log
-*.gz
-*.git
-*.db
+##########
+# OSX
+##########
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
-bin
-pids
+##########
+# Node
+##########
 logs
-results
-
-npm-debug.log
+*.log
+pids
+*.pid
+*.seed
+lib-cov
+coverage
+.grunt
+build/Release
 node_modules
+.lock-wscript
 
-*.DS_Store
-
-*.sublime-project
+##########
+# Sublime
+##########
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
 *.sublime-workspace
+*.sublime-project
+sftp-config.json
 
-Game_Prettified.js
+##########
+# Custom
+##########
+Configs.js
+*.dat
+Server/Configs.js

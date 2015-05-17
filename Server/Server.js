@@ -6,12 +6,12 @@ App.Modules.SocketIOSessions = require('socket-io.sessions'); /**< Sessions for 
 
 // Set up Socket.IO sessions and passport.
 App.Apps.SocketIO.set('authorization', App.Modules.SocketIOSessions({
-	cookieParser: App.Modules.Express.cookieParser,
+	cookieParser: App.Modules.CookieParser,
 	key: 'express.sid',
 	secret: 'yawk yawk yawk yawk',
 	store: App.Databases.SessionStore
 }, App.Modules.PassportSocketIO.authorize({
-	cookieParser: App.Modules.Express.cookieParser,
+	cookieParser: App.Modules.CookieParser,
 	key: 'express.sid',
 	secret: 'yawk yawk yawk yawk',
 	store: App.Databases.SessionStore

@@ -1,5 +1,5 @@
 App.Modules.MongoDB = require('mongodb').MongoClient; /**< Mongo module. */
-App.Modules.MongoStore = require('connect-mongo')(App.Modules.Express); /**< Mongo session store. */
+App.Modules.MongoStore = require('connect-mongo')(App.Modules.Session); /**< Mongo session store. */
 
 App.Modules.MongoDB.connect(App.Vars.DBUrl, function(Error, DataBase) {
 	if (Error) {
