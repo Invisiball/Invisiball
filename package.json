@@ -1,6 +1,6 @@
 {
   "name": "invisiball",
-  "version": "3.0.0",
+  "version": "0.3.0",
   "description": "A FPS with a twist.",
   "main": "Server.js",
   "scripts": {
@@ -38,5 +38,5 @@
     "invisiball"
   ],
   "author": "Invisiball",
-  "license": "MIT"
+  "license": "BSD"
 }
