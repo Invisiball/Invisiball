@@ -1,4 +1,5 @@
-# Invisiball
+__Note: This is an upload of what I was hoping to be the next version of Invisiball... However, I think the setup is getting unmanageable, so I will not be reusing this setup.__
+# Invisiball V3
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Run
