@@ -1,4 +1,4 @@
-# Invisiball 0.4
+# Invisiball v0.4
 A quirky multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Run
