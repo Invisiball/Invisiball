@@ -1,4 +1,6 @@
 # Invisiball v0.2
+[![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball)
+
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Run
