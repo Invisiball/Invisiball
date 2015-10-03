@@ -13,7 +13,14 @@ App.Apps.Express.get('/Me/Login', App.Apps.Express.MiddleWare.CheckForMaintenanc
 		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Main.html'.AssetPath, {
 			IsAuthenticated: false, // Is authenticated?
 			Me: Request.user, // Me
-			Err: Response.req.query.Error // Error
+			Err: Response.req.query.Error, // Error
+
+			GoogleAuthAvailable: App.Auths.Google.ClientInfo.Id && App.Auths.Google.ClientInfo.Secret,
+			FacebookAuthAvailable: App.Auths.Facebook.ClientInfo.Id && App.Auths.Facebook.ClientInfo.Secret,
+			TwitterAuthAvailable: App.Auths.Twitter.ClientInfo.Key && App.Auths.Twitter.ClientInfo.Secret,
+			NoAuthAvailable: !(App.Auths.Google.ClientInfo.Id && App.Auths.Google.ClientInfo.Secret) &&
+							 !(App.Auths.Facebook.ClientInfo.Id && App.Auths.Facebook.ClientInfo.Secret) &&
+							 !(App.Auths.Twitter.ClientInfo.Key && App.Auths.Twitter.ClientInfo.Secret)
 		}));
 	}
 });

@@ -3,17 +3,16 @@
 
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
-## How To Run
-First, edit [Server/Configs.js](./Server/Configs.js) and fill in your email information, OAuth keys / secrets, and MongoDB URL.
-<br>
-Then, run `node Server.js` in Administrator Mode (or `sudo`).
-<br>
-The server will take over `process.env.PORT` (or if not set, port 80).
-
 ## How To Play
 This is just another 1st-person shooter game, but with a twist: All players are invisible. Players must use their opponents' shots to calculate where the opponent is likely to be.
 <br>
 Instructions and tutorials will be added eventually.
+
+## How To Run
++ Install dependancies with: `npm install --local`.
++ Copy [Server/Configs.Example.js](./Server/Configs.Example.js) to [Server/Configs.js](./Server/Configs.js) and fill in your hostname, email information, OAuth keys / secrets, and MongoDB URL.
++ Run `node Server.js` in Administrator Mode (or `sudo`).
++ The server will take over `process.env.PORT` (or if not set, port 80).
 
 ## Todos
 + [ ] Update all libaries.

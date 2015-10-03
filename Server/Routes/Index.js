@@ -16,7 +16,14 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 		Err: Response.req.query.Error, // Error
 
 		Rooms: RoomData, // Rooms
-		RoomsAreAvailable: RoomData.length !== 0 // Are rooms available?
+		RoomsAreAvailable: RoomData.length !== 0, // Are rooms available?
+
+		GoogleAuthAvailable: App.Auths.Google.ClientInfo.Id && App.Auths.Google.ClientInfo.Secret,
+		FacebookAuthAvailable: App.Auths.Facebook.ClientInfo.Id && App.Auths.Facebook.ClientInfo.Secret,
+		TwitterAuthAvailable: App.Auths.Twitter.ClientInfo.Key && App.Auths.Twitter.ClientInfo.Secret,
+		NoAuthAvailable: !(App.Auths.Google.ClientInfo.Id && App.Auths.Google.ClientInfo.Secret) &&
+						 !(App.Auths.Facebook.ClientInfo.Id && App.Auths.Facebook.ClientInfo.Secret) &&
+						 !(App.Auths.Twitter.ClientInfo.Key && App.Auths.Twitter.ClientInfo.Secret)
 	}));
 });
 
