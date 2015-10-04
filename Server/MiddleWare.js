@@ -1,11 +1,11 @@
 // Set up paths.
-App.Apps.Express.use('/', App.Modules.Express.static('/Html'.AssetPath));
-App.Apps.Express.use('/Css', App.Modules.Express.static('/Css'.AssetPath));
-App.Apps.Express.use('/Js', App.Modules.Express.static('/Js'.AssetPath));
-App.Apps.Express.use('/Images', App.Modules.Express.static('/Images'.AssetPath));
-App.Apps.Express.use('/Sounds', App.Modules.Express.static('/Sounds'.AssetPath));
-App.Apps.Express.use('/Meshes', App.Modules.Express.static('/Meshes'.AssetPath));
-App.Apps.Express.use('/Maps', App.Modules.Express.static('/Maps'.AssetPath));
+App.Apps.Express.use('/', App.Modules.Express.static(App.Configs.AssetPath + '/Html'));
+App.Apps.Express.use('/Css', App.Modules.Express.static(App.Configs.AssetPath + '/Css'));
+App.Apps.Express.use('/Js', App.Modules.Express.static(App.Configs.AssetPath + '/Js'));
+App.Apps.Express.use('/Images', App.Modules.Express.static(App.Configs.AssetPath + '/Images'));
+App.Apps.Express.use('/Sounds', App.Modules.Express.static(App.Configs.AssetPath + '/Sounds'));
+App.Apps.Express.use('/Meshes', App.Modules.Express.static(App.Configs.AssetPath + '/Meshes'));
+App.Apps.Express.use('/Maps', App.Modules.Express.static(App.Configs.AssetPath + '/Maps'));
 
 // Set up 3rd-party middleware.
 App.Apps.Express.use(App.Modules.Express.cookieParser());

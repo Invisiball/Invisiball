@@ -10,7 +10,7 @@ App.Apps.Express.get('/Me/Login', App.Apps.Express.MiddleWare.CheckForMaintenanc
 		Response.redirect('/Me/Profile');
 	} else {
 		// Send login page.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Main.html'.AssetPath, {
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Main.html', {
 			IsAuthenticated: false, // Is authenticated?
 			Me: Request.user, // Me
 			Err: Response.req.query.Error, // Error
@@ -34,7 +34,7 @@ App.Apps.Express.get('/Me/JSON', App.Apps.Express.MiddleWare.AuthenticateUser, A
 // Pretty version of /Me/JSON.
 App.Apps.Express.get('/Me/Profile', App.Apps.Express.MiddleWare.AuthenticateUser, App.Apps.Express.MiddleWare.CheckForMaintenance, function(Request, Response) {
 	// Send info.
-	Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Profile.html'.AssetPath, { // Send file.
+	Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Profile.html', { // Send file.
 		IsAuthenticated: true, // Is authenticated?
 		Me: Request.user, // Me
 		Err: Response.req.query.Error, // Error
@@ -52,7 +52,7 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 	} else {
 		if (Response.req.query.NewUsername) { // Is requesting username change.
 			if (Response.req.query.NewUsername.length < 8 || Response.req.query.NewUsername.length > 20) { // Check for bad usernames.
-				Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Finalize.html'.AssetPath, { // Send page.
+				Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Finalize.html', { // Send page.
 					IsAuthenticated: true, // Is authenticated?
 					Me: Request.user, // Me
 					Err: 'Username "' + Response.req.query.NewUsername + '" has to be between 8-20 characters.' // Error
@@ -65,7 +65,7 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 					}
 
 					if (Found) { // Is taken.
-						Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Finalize.html'.AssetPath, {
+						Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Finalize.html', {
 							IsAuthenticated: true, // Is authenticated?
 							Me: Request.user, // Me
 							Err: 'Username "' + Response.req.query.NewUsername + '" has been taken.' // Error
@@ -84,7 +84,7 @@ App.Apps.Express.get('/Me/Profile/Finalize', App.Apps.Express.MiddleWare.Authent
 				});
 			}
 		} else { // Requesting page, send page.
-			Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Finalize.html'.AssetPath, {
+			Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Finalize.html', {
 				IsAuthenticated: true, // Is authenticated?
 				Me: Request.user, // Me
 				Err: Response.req.query.Error // Error

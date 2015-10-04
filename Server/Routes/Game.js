@@ -17,7 +17,7 @@ App.Apps.Express.get('/Play/:RoomName', App.Apps.Express.MiddleWare.Authenticate
 	if (!Request.user.Username) { // No username, force setup.
 		Response.redirect('/Me/Profile/Finalize');
 	} else { // Send page.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Game.html'.AssetPath, {
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Game.html', {
 			Me: Request.user, //Me
 			RoomData: { Name: Request.params.RoomName, Password: Response.req.query.Password, PlayerNumber: Response.req.query.PlayerNumber || 1}, // Game Data
 			IsDebugging: App.Configs.Global.IsDebugging // Is debugging?

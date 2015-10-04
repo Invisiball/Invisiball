@@ -1,7 +1,7 @@
 App.Modules.MongoDB = require('mongodb').MongoClient; /**< Mongo module. */
 App.Modules.MongoStore = require('connect-mongo')(App.Modules.Express); /**< Mongo session store. */
 
-App.Modules.MongoDB.connect(App.Vars.DBUrl, function(Error, DataBase) {
+App.Modules.MongoDB.connect(App.Configs.DBUrl, function(Error, DataBase) {
 	if (Error) {
 		App.Console.Throw(__filename, App.Utils.LineNumber, Error);
 	}
@@ -15,6 +15,6 @@ App.Modules.MongoDB.connect(App.Vars.DBUrl, function(Error, DataBase) {
 	});
 });
 
-App.Databases.SessionStore = new App.Modules.MongoStore({ url: App.Vars.DBUrl });
+App.Databases.SessionStore = new App.Modules.MongoStore({ url: App.Configs.DBUrl });
 
 module.exports = null;

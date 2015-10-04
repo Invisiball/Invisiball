@@ -7,7 +7,7 @@ App.Apps.Express.get('/IP', function(req, res) {
 // Maintenance page.
 App.Apps.Express.get('/Maintenance', function(Request, Response) {
 	if (App.Configs.Global.IsMaintaining) { // If maintaining, send maintenance file.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Maintenance.html'.AssetPath, {
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Maintenance.html', {
 			IsAuthenticated: !!Request.user, // Is authenticated?
 			Me: Request.user, // Me
 			Err: Response.req.query.Error // Error

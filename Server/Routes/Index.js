@@ -10,7 +10,7 @@ App.Apps.Express.get('/', App.Apps.Express.MiddleWare.CheckForMaintenance, funct
 	}
 
 	// Send page.
-	Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Main.html'.AssetPath, {
+	Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Main.html', {
 		IsAuthenticated: !!Request.user, // Is authenticated?
 		Me: Request.user, // Me
 		Err: Response.req.query.Error, // Error
@@ -62,7 +62,7 @@ App.Apps.Express.get('/Leaderboard', App.Apps.Express.MiddleWare.CheckForMainten
 		}
 
 		// Send page with rows.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Leaderboard.html'.AssetPath, {
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Leaderboard.html', {
 			IsAuthenticated: !!Request.user, // Is authenticated?
 			Me: Request.user, // Me
 			Err: Response.req.query.Error, // Error
@@ -138,7 +138,7 @@ App.Apps.Express.get('/Profile/:Username', App.Apps.Express.MiddleWare.CheckForM
 		}
 
 		// Send page.
-		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile('/Html/Profile.html'.AssetPath, {
+		Response.send(App.Vars.ResponseCodes.Ok, App.Modules.Swig.renderFile(App.Configs.AssetPath + '/Html/Profile.html', {
 			IsAuthenticated: true, // Is authenticated?
 			Me: Request.user, // Me
 			Err: Response.req.query.Error, // Error

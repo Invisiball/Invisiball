@@ -3,7 +3,7 @@
  */
 App.Console.Log = function(file, line, t) {
 	if (App.Configs.Global.IsDebugging) {
-		console.log('[' + file.toString().TrimPath + ':' + line.toString() + '] ' + t.toString());
+		console.log('[' + path.basename(file) + ':' + line.toString() + '] ' + t.toString());
 	}
 };
 
@@ -12,7 +12,7 @@ App.Console.Log = function(file, line, t) {
  */
 App.Console.Error = function(file, line, t) {
 	if (App.Configs.Global.IsDebugging) {
-		console.error(('[' + file.toString().TrimPath + ':' + line.toString() + '] ' + t.toString()).red);
+		console.error(('[' + path.basename(file) + ':' + line.toString() + '] ' + t.toString()).red);
 	}
 };
 

@@ -19,9 +19,11 @@ App.Configs.Global.AdminSecret = function(gen_new) {
 App.Configs.Global.Address.Port = process.env.PORT || 80; /**< Port to listen to. */
 App.Configs.Global.Address.Url = ''; /**< Base URL to listen to. */
 
-//==================== OTHER ====================
+App.Configs.DBUrl = ''; /**< Database URL */
 
-App.Vars.DBUrl = ''; /**< Database URL */
+App.Configs.AssetPath = path.normalize(__dirname + '/../Assets');
+
+//==================== EMAIL ====================
 
 // Set up mail.
 App.Emails.Google.Account = {
@@ -29,7 +31,7 @@ App.Emails.Google.Account = {
 	Password: '' // ... and password.
 };
 
-//========== AUTHS ==========
+//=================== AUTHS ===================
 
 // Facebook client data.
 App.Auths.Facebook.ClientInfo = Object.freeze({

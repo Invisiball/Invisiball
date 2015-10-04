@@ -29,7 +29,7 @@ global.App = require('./Server/App');
 
 //========== START UTILS ==========
 
-require('./Server/Utils/Main');
+require('./Server/Utils/LineNumber');
 require('./Server/Utils/Console');
 
 //========== START NODEJS VARS ==========
