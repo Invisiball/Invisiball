@@ -10,7 +10,7 @@ Instructions and tutorials will be added eventually.
 
 ## How To Run
 + Install dependancies with: `npm install --local`.
-+ Copy [server/config.example.js](./server/config.example.js) to [server/config.js](./server/config.js) and fill in your hostname, email information, OAuth keys / secrets, and MongoDB URL.
++ Copy [lib/config.example.js](./lib/config.example.js) to [lib/config.js](./lib/config.js) and fill in your hostname, email information, OAuth keys / secrets, and MongoDB URL.
 + Run `node main` in Administrator Mode (or `sudo`).
 + The server will take over `process.env.PORT` (or if not set, port 80).
 
