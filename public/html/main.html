@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<title>Invisiball: The FPS With A Twist! | Home</title>
+		{% include './bits/css.html' %}
+		<link href="/css/main.css" rel="stylesheet">
+		{% include './bits/js.html' %}
+	</head>
+	<body>
+		{% include './bits/navigation.html' %}
+		<div class="container">
+			<h1>Invisiball - Home</h1>
+			<h3 id="error">{{error}}</h3>
+			{% if isAuthenticated %}
+				<button type="submit" class="btn btn-default" style="margin-left: 10px;"><a href="/me/logout">Logout</a></button>
+				<h1>Rooms: </h1>
+				{% if roomsAvailable %}
+					{% for room in rooms %}
+						{% if room.locked %}
+							<img src="/images/lock.png" style="height: 30px;">
+						{% endif %}
+						<button type="submit" class="btn btn-default"><a href="/play/{{room.name}}">{{room.name}}</a></button> {{room.players}}
+					{% endfor %}
+					<br><br>
+				{% else %}
+					<b>No rooms.</b> <br>
+				{% endif %}
+				<p>{% if roomsAvailable %}Or create{% else %}Create{% endif %} a new one:<small> <i>(Press "ENTER" when done customizing.)</i></small></p>
+				<input id="room" type="text" class="form-control" placeholder="Room Name" style="display: inline-block;">
+				<input id="password" type="password" class="form-control" placeholder="Password" style="display: inline-block;">
+				<input id="max_players" type="text" class="form-control" placeholder="Max Player #" style="display: inline-block;">
+			{% else %}
+				{% if googleAuth %}
+					<button type="submit" class="btn btn-default"><a href="/auths/google">Login With Google</a></button>
+				{% endif %}
+				{% if fbAuth %}
+					<button type="submit" class="btn btn-default" title="We leave your wall alone. Literally."><a href="/auths/fb">Login With Facebook</a></button>
+				{% endif %}
+				{% if twitterAuth %}
+					<button type="submit" class="btn btn-default"><a href="/auths/twitter">Login With Twitter</a></button>
+				{% endif %}
+				{% if noAuth %}
+					<b>No authentication option(s) available. Please see <code>configs.js</code>.</b>
+				{% endif %}
+			{% endif %}
+		</div>
+		{% if isAuthenticated %}
+			<script src="/js/main.js"></script>
+		{% endif %}
+	</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<title>Invisiball: The FPS With A Twist! | Finalize</title>
+		{% include './bits/css.html' %}
+		<link href="/css/finalize.css" rel="stylesheet">
+		{% include './bits/js.html' %}
+	</head>
+	<body>
+		{% include './bits/navigation.html' %}
+		<div class="container">
+			<h1>Invisiball - Finalize</h1>
+			<h3 id="error">{{error}}</h3>
+			<div id="form-container">
+				Final Username: <input type="text" class="form-control">
+				<br>
+				<button type="submit" class="btn btn-default">Finalize</button>
+			</div>
+		</div>
+		<script src="/js/finalize.js"></script>
+	</body>
+</html>

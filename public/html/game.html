@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<title>Invisiball: The FPS With A Twist! | Play</title>
+		{% include './bits/css.html' %}
+		<link href="/css/game.css" rel="stylesheet">
+		{% include './bits/js.html' %}
+		<script src="/js/utils/three.js"></script>
+		<script src="/js/utils/cannon.js"></script>
+		<script src="/js/utils/three-utils.js"></script>
+		<script src="/js/utils/pointer-lock-controls.js"></script>
+		<script src="/js/utils/fullscreen.js"></script>
+		<script src="/js/utils/stats.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<div id="container">
+			<div id="blocker">
+				<div id="instructions">
+					<span id="title" style="font-size:40px;">Click to play.</span>
+					<br>
+					<span id="body">(W, A, S, D = Move, SPACE = Jump, MOUSE = Look, CLICK = Shoot, T = Talk, L = Toggle Leaderboard, C = Toggle Sound, P = Toggle Cinematic Mode, ESC = This Message)</span>
+				</div>
+			</div>
+			<div class="hair" style="width: 10px; height: 2px; top: 50%; left: calc( 50% - 4px ); z-index: 1;"></div>
+			<div class="hair" style="height: 10px; width: 2px; left: 50%; top: calc( 50% - 4px ); z-index: 1;"></div>
+			<div id="userinfo">
+				Score: <span id="score">0</span>
+				&nbsp; &nbsp; &nbsp; &nbsp;
+				Deaths: <span id="death">0</span>
+				&nbsp; &nbsp; &nbsp; &nbsp;
+				Room Name: <span>{{room.name}}</span>
+				&nbsp; &nbsp; &nbsp; &nbsp; Ammo: <span id="ammo">10</span>
+				<span style="position: absolute; right: 3px;"><a href="https://github.com/Invisiball/Invisiball">Invisiball</a></span>
+			</div>
+			<div id="leaderboard">
+				<h3>Leaderboard</h3>
+				<table style="width: 100%;">
+					<tr>
+						<th><b>Username</b></th>
+						<th><b>Kills</b></th>
+						<th><b>Deaths</b></th>
+					</tr>
+				</table>
+			</div>
+			<ul id="update"></ul>
+		</div>
+		<audio>
+			<source src="/sounds/hit.ogg" type="audio/ogg">
+			<source src="/sounds/hit.mp3" type="audio/mpeg">
+		</audio>
+		<audio>
+			<source src="/sounds/shot.ogg" type="audio/ogg">
+			<source src="/sounds/shot.mp3" type="audio/mpeg">
+		</audio>
+		<script>
+			var user_data = {
+					username: '{{me.username}}',
+					email: '{{me.email}}',
+					shots: {{me.shots}},
+					kills: {{me.kills}},
+					deaths: {{me.deaths}},
+					id: '{{me.id}}'
+				  },
+				  room_data = {
+					name: '{{room.name}}',
+					password: '{{room.password}}',
+					maxPlayers: {{room.maxPlayers}}
+				  },
+				  __DEBUG__ = {{isDebugging}};
+		</script>
+		<script src="/js/game.js"></script>
+	</body>
+</html>

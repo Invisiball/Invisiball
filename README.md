@@ -1,4 +1,4 @@
-# Invisiball v0.2
+# Invisiball
 [![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball)
 
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
@@ -10,8 +10,8 @@ Instructions and tutorials will be added eventually.
 
 ## How To Run
 + Install dependancies with: `npm install --local`.
-+ Copy [Server/Configs.Example.js](./Server/Configs.Example.js) to [Server/Configs.js](./Server/Configs.js) and fill in your hostname, email information, OAuth keys / secrets, and MongoDB URL.
-+ Run `node Server.js` in Administrator Mode (or `sudo`).
++ Copy [server/config.example.js](./server/config.example.js) to [server/config.js](./server/config.js) and fill in your hostname, email information, OAuth keys / secrets, and MongoDB URL.
++ Run `node main` in Administrator Mode (or `sudo`).
 + The server will take over `process.env.PORT` (or if not set, port 80).
 
 ## Todos
@@ -20,8 +20,8 @@ Instructions and tutorials will be added eventually.
 + [ ] Run engine on server side for security.
 
 ## Features
-+ [X] View player stats by going to `/Profile/[:username]`.
-+ [X] View leaderboard by going to `/Leaderboard`.
++ [X] View player stats by going to `/profile/[:username]`.
++ [X] View leaderboard by going to `/leaderboard`.
 + [X] Killcount and deathcount (now global as well as local).
 + [X] Rooms + simple chat.
 + [X] Updates on who killed who, who joined, and who left.

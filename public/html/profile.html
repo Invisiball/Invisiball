@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<title>Invisiball: The FPS With A Twist! | Profile</title>
+		{% include './bits/css.html' %}
+		<link href="/css/finalize.css" rel="stylesheet">
+		{% include './bits/js.html' %}
+	</head>
+	<body>
+		{% include './bits/navigation.html' %}
+		<div class="container">
+			<h1>Invisi<b>player</b>: <span id="username">{{user.username}}</span></h1>
+			<h3 id="error">{{error}}</h3>
+			{% if noUser %}
+				<b>Could not find player with username "{{user.username}}".</b>
+			{% else %}
+				<table class="table table-hover">
+					<tbody>
+						<tr><td>Invisi<b>kills</b></td><td id="kills">{{user.kills}}</td></tr>
+						<tr><td>Invisi<b>deaths</b></td><td id="deaths">{{user.deaths}}</td></tr>
+						<tr><td>Invisi<b>shots</b></td><td id="shots">{{user.shots}}</td></tr>
+					</tbody>
+				</table>
+			{% endif %}
+		</div>
+	</body>
+</html>
