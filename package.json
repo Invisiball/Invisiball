@@ -1,7 +1,7 @@
 {
   "name": "invisiball",
   "version": "0.3.0",
-  "description": "A FPS with a twist.",
+  "description": "The FPS with a twist.",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Hello World!\" && exit 0",
