@@ -30,6 +30,8 @@ var rooms = Object.create(null);
 //========== MODULES ==========
 
 var express = require('express');
+var session = require('express-session');
+var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var colors = require('colors');
 var moment = require('moment');
@@ -52,7 +54,7 @@ var config = require('./lib/config')(whirlpool);
 
 //========== START SQLITE JOBS ==========
 
-var db = require('./lib/apps/db')(config, express);
+var db = require('./lib/apps/db')(config, session);
 
 //========== START MAILER SETUP ==========
 
@@ -60,7 +62,7 @@ var sendMail = require('./lib/apps/mail')(config.email);
 
 //========== START SERVER SETUP ==========
 
-var httpServer = require('./lib/server')(config, db, app, express, passport);
+var httpServer = require('./lib/server')(config, db, app, express, session, cookieParser, passport);
 
 //========== START AUTH SETUP ==========
 
@@ -77,7 +79,7 @@ require('./lib/routes/system')(config, app);
 
 //========== START SOCKET.IO ==========
 
-var io = require('./lib/apps/socket')(db, express, httpServer, rooms);
+var io = require('./lib/apps/socket')(db, httpServer, rooms, cookieParser);
 
 //========== START PROCESS EVENTS ==========
 

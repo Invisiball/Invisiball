@@ -785,7 +785,13 @@
 			// Disconnect socket when leaving.
 			window.onbeforeunload = function() {
 				socket.disconnect();
-				return 'Unfortunately, our servers are too slow to realize that you are leaving. Therefore, we are forced to put this message here to let them know what\'s going on. Please disregard this message and continue invisisurfing the Invisiweb. :)';
+
+				// This will reconnect the socket if the user decides to stay.
+				setTimeout(function() {
+					socket.socket.connect();
+				}, 1);
+
+				return 'Are you sure you want to leave the game?';
 			}
 		});
 
