@@ -83,12 +83,12 @@ var io = require('./lib/apps/socket')(db, httpServer, rooms, cookieParser);
 
 //========== START PROCESS EVENTS ==========
 
-process.on('exit', function() {
-	log.fatal('Exiting...');
-	process.exit(0);
-});
+// process.on('exit', function() {
+// 	log.fatal('Exiting...');
+// 	process.exit(0);
+// });
 
-process.on('SIGINT', function() {
-	log.fatal('Interrupted...');
-	process.exit(0);
-});
+// process.on('SIGINT', function() {
+// 	log.fatal('Interrupted...');
+// 	process.exit(0);
+// });

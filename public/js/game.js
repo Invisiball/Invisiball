@@ -119,7 +119,7 @@
 		lastTimeKilled = 0, /**< Records the last time killed. */
 		leaderboardData = []; /**< Records leaderboard data. */
 
-	var socket = io.connect('/');
+	var socket = io();
 
 	var sphereShape, sphereBody, world, physicsMaterial, balls = [], ballMeshes = [];
 
@@ -631,217 +631,211 @@
 
 		// Authenticate user.
 		socket.emit('user::authenticate', room_data.name);
+	});
 
-		// Connecting.
-		socket.on('connecting', function() {
-			update_log('<li style="color: green;">Connecting...</li>');
-		});
+	// Connecting.
+	socket.on('connecting', function() {
+		update_log('<li style="color: green;">Connecting...</li>');
+	});
 
-		// Disconnected.
-		socket.on('disconnect', function() {
-			update_log('<li style="color: red;">Disconnected!</li>');
-		});
+	// Disconnected.
+	socket.on('disconnect', function() {
+		update_log('<li style="color: red;">Disconnected!</li>');
+	});
 
-		// Connection failed.
-		socket.on('connect_failed', function() {
-			update_log('<li style="color: red;">Connecting failed...</li>');
-		});
+	// Connection failed.
+	socket.on('connect_failed', function() {
+		update_log('<li style="color: red;">Connecting failed...</li>');
+	});
 
-		// An error occured.
-		socket.on('error', function(err) {
-			update_log('<li style="color: red;">Error! Please wait while we try to fix it...</li>');
-		});
+	// An error occured.
+	socket.on('error', function(err) {
+		update_log('<li style="color: red;">Error! Please wait while we try to fix it...</li>');
+	});
 
-		// Reconnection failed.
-		socket.on('reconnect_failed', function() {
-			update_log('<li style="color: red;">Reconnection failed!</li>');
-		});
+	// Reconnection failed.
+	socket.on('reconnect_failed', function() {
+		update_log('<li style="color: red;">Reconnection failed!</li>');
+	});
 
-		// Reconnected.
-		socket.on('reconnect', function() {
-			update_log('<li style="color: green;">Reconnected!</li>');
-		});
+	// Reconnected.
+	socket.on('reconnect', function() {
+		update_log('<li style="color: green;">Reconnected!</li>');
+	});
 
-		// Reconnecting.
-		socket.on('reconnecting', function() {
-			update_log('<li style="color: green;">Reconnecting...</li>');
-		});
+	// Reconnecting.
+	socket.on('reconnecting', function() {
+		update_log('<li style="color: green;">Reconnecting...</li>');
+	});
 
-		// A new ball must be created.
-		socket.on('ball::set', function(name, ballinfo) {
-			if (__DEBUG__) {
-				console.debug('Ball::Set (' + name + ').');
+	// A new ball must be created.
+	socket.on('ball::set', function(name, ballinfo) {
+		if (__DEBUG__) {
+			console.debug('Ball::Set (' + name + ').');
+		}
+
+		// Set the ball's distinct color.
+		if (!ballColors[name]) {
+			ballColors[name] = RandomColor();
+		}
+
+		// Create the ball.
+		var tmp_material = new THREE.MeshLambertMaterial({ color: ballColors[name] });
+		THREE.ColorConverter.setHSV(tmp_material.color, 0, 0, 0.9);
+
+		var ballBody = new CANNON.Body({ mass: 1 });
+		ballBody.addShape(ballShape);
+		ballBody.userData = { 'name': name };
+		ballBody.velocity.set(ballinfo[0][0], ballinfo[0][1], ballinfo[0][2]);
+		ballBody.position.set(ballinfo[1][0], ballinfo[1][1], ballinfo[1][2]);
+		world.add(ballBody);
+
+		var ballMesh = new THREE.Mesh(ballGeometry, tmp_material);
+		ballMesh.castShadow = true;
+		ballMesh.receiveShadow = true;
+		ballMesh.position.set(ballinfo[1][0], ballinfo[1][1], ballinfo[1][2]);
+		scene.add(ballMesh);
+
+		balls.push([ballBody, 0]);
+		ballMeshes.push(ballMesh);
+	});
+
+	// A point must be added.
+	socket.on('score::add', function(name, victim) {
+		if (__DEBUG__) {
+			console.debug('Score::Add (' + name + ', ' + victim + ').');
+		}
+
+		if (name === user_data.username) { // Update kills if player was killer.
+			$('#score').html(parseInt($('#score').html()) + 1);
+			update_log('<li style="color: orange;">You invisikilled ' + victim + '!</li>');
+			socket.emit('point::add');
+		} else if (victim === user_data.username) { // Update deaths if player was killed.
+			$('#death').html(parseInt($('#death').html()) + 1);
+			update_log('<li style="color: orange;">' + name + ' invisikilled you!</li>');
+		} else { // Other players were fighting, so add that.
+			update_log('<li>' + name + ' invisikilled ' + victim + '!</li>');
+		}
+
+		var dfn = false, /**< Did find name. */
+			dfv = false; /**< Did find victim. */
+		// Add the point to the leaderboard data.
+		for (var iter = 0; iter < leaderboardData.length; iter++) {
+			if (dfn && dfv) {
+				break;
 			}
 
-			// Set the ball's distinct color.
-			if (!ballColors[name]) {
-				ballColors[name] = RandomColor();
+			if (leaderboardData[iter].username === name) {
+				leaderboardData[iter].kills++;
+				dfn = true;
 			}
 
-			// Create the ball.
-			var tmp_material = new THREE.MeshLambertMaterial({ color: ballColors[name] });
-			THREE.ColorConverter.setHSV(tmp_material.color, 0, 0, 0.9);
-
-			var ballBody = new CANNON.Body({ mass: 1 });
-			ballBody.addShape(ballShape);
-			ballBody.userData = { 'name': name };
-			ballBody.velocity.set(ballinfo[0][0], ballinfo[0][1], ballinfo[0][2]);
-			ballBody.position.set(ballinfo[1][0], ballinfo[1][1], ballinfo[1][2]);
-			world.add(ballBody);
-
-			var ballMesh = new THREE.Mesh(ballGeometry, tmp_material);
-			ballMesh.castShadow = true;
-			ballMesh.receiveShadow = true;
-			ballMesh.position.set(ballinfo[1][0], ballinfo[1][1], ballinfo[1][2]);
-			scene.add(ballMesh);
-
-			balls.push([ballBody, 0]);
-			ballMeshes.push(ballMesh);
-		});
-
-		// A point must be added.
-		socket.on('score::add', function(name, victim) {
-			if (__DEBUG__) {
-				console.debug('Score::Add (' + name + ', ' + victim + ').');
+			if (leaderboardData[iter].username === victim) {
+				leaderboardData[iter].deaths++;
+				dfv = true;
 			}
+		}
 
-			if (name === user_data.username) { // Update kills if player was killer.
-				$('#score').html(parseInt($('#score').html()) + 1);
-				update_log('<li style="color: orange;">You invisikilled ' + victim + '!</li>');
-				socket.emit('point::add');
-			} else if (victim === user_data.username) { // Update deaths if player was killed.
-				$('#death').html(parseInt($('#death').html()) + 1);
-				update_log('<li style="color: orange;">' + name + ' invisikilled you!</li>');
-			} else { // Other players were fighting, so add that.
-				update_log('<li>' + name + ' invisikilled ' + victim + '!</li>');
+		// Update the leaderboard.
+		make_leaderboard();
+	});
+
+	// Authenicate user with password.
+	socket.on('user::authenticate', function(password) {
+		if (password !== '') {
+			var answer = prompt('This is a password-protected room.', 'Enter the password here.');
+			if (answer !== password) {
+				window.location.href = '/?Error=Incorrect password.';
+				return;
 			}
+		}
 
-			var dfn = false, /**< Did find name. */
-				dfv = false; /**< Did find victim. */
-			// Add the point to the leaderboard data.
-			for (var iter = 0; iter < leaderboardData.length; iter++) {
-				if (dfn && dfv) {
-					break;
-				}
+		if (__DEBUG__) {
+			console.debug('Room::Create (' + JSON.stringify(room_data) + ')');
+		}
 
-				if (leaderboardData[iter].username === name) {
-					leaderboardData[iter].kills++;
-					dfn = true;
-				}
+		// Create user.
+		socket.emit('user::create', room_data);
+	});
 
-				if (leaderboardData[iter].username === victim) {
-					leaderboardData[iter].deaths++;
-					dfv = true;
-				}
-			}
+	// A new user must be added.
+	socket.on('user::create', function(name) {
+		if (__DEBUG__) {
+			console.debug('User::Create (' + name + ').');
+		}
 
-			// Update the leaderboard.
-			make_leaderboard();
-		});
+		// Tell player that a new player joined.
+		update_log(name === user_data.username ? '<li style="color: orange;">You joined!</li>' : '<li>' + name + ' joined!</li>');
 
-		// Authenicate user with password.
-		socket.on('user::authenticate', function(password) {
-			if (password !== '') {
-				var answer = prompt('This is a password-protected room.', 'Enter the password here.');
-				if (answer !== password) {
-					window.location.href = '/?Error=Incorrect password.';
-					return;
-				}
-			}
+		// Make sure its not us.
+		if (name !== user_data.username) {
+			// Add this player to the leaderboard.
+			leaderboardData.push({
+				username: name,
+				kills: 0,
+				deaths: 0,
+				Kills: 0,
+				Deaths: 0,
+				is_self: name === user_data.username
+			});
+		}
 
-			if (__DEBUG__) {
-				console.debug('Room::Create (' + JSON.stringify(room_data) + ')');
-			}
+		// Update the leaderboard.
+		make_leaderboard();
 
-			// Create user.
-			socket.emit('user::create', room_data);
-		});
-
-		// A new user must be added.
-		socket.on('user::create', function(name) {
-			if (__DEBUG__) {
-				console.debug('User::Create (' + name + ').');
-			}
-
-			// Tell player that a new player joined.
-			update_log(name === user_data.username ? '<li style="color: orange;">You joined!</li>' : '<li>' + name + ' joined!</li>');
-
-			// Make sure its not us.
-			if (name !== user_data.username) {
-				// Add this player to the leaderboard.
-				leaderboardData.push({
-					username: name,
-					kills: 0,
-					deaths: 0,
-					Kills: 0,
-					Deaths: 0,
-					is_self: name === user_data.username
-				});
-			}
-
-			// Update the leaderboard.
-			make_leaderboard();
-
-			// Disconnect socket when leaving.
-			window.onbeforeunload = function() {
-				socket.disconnect();
-
-				// This will reconnect the socket if the user decides to stay.
-				setTimeout(function() {
-					socket.socket.connect();
-				}, 1);
-
-				return 'Are you sure you want to leave the game?';
-			}
-		});
-
-		// A user must be deleted.
-		socket.on('user::delete', function(name) {
-			if (__DEBUG__) {
-				console.debug('User::Delete (' + name + ').');
-			}
-
-			// Tell the player that a player left.
-			update_log(name === user_data.username ? '<li style="color: orange;">You left.</li>' : '<li>' + name + ' left.</li>');
-
-			// Update the leaderboard data.
-			for (var iter = 0; iter < leaderboardData.length; iter++) {
-				if (leaderboardData[iter].username === name) {
-					leaderboardData.splice(iter, 1);
-					break;
-				}
-			}
-
-			// Update the leaderboard.
-			make_leaderboard();
-		});
-
-		// A chat message must be presented.
-		socket.on('user::chat', function(name, message) {
-			// Tell the player the message and the author.
-			update_log(user_data.username === name ? '<li style="color: orange;"><i>You: ' + message + '</i></li>' : '<li><i>' + name + ': ' + message + '</i></li>');
-		});
-
-		// The leaderboard must be initialized.
-		socket.on('leaderboard::get', function(data) {
-			// Push new data to the leaderboard.
-			var keys = Object.keys(data);
-			for (var iter = 0; iter < keys.length; iter++) {
-				data[keys[iter]].username = keys[iter];
-				data[keys[iter]].is_self = (user_data.username === keys[iter]);
-				data[keys[iter]].kills = data[keys[iter]].kills;
-				data[keys[iter]].deaths = data[keys[iter]].deaths;
-				leaderboardData.push(data[keys[iter]]);
-			}
-
-			// Update the leaderboard.
-			make_leaderboard();
-		});
-
-		// Maintenance.
-		socket.on('maintenance', function() {
+		// Disconnect socket when leaving.
+		window.onbeforeunload = function() {
 			socket.disconnect();
-			window.location.href = '/Maintenance?FromGame=true';
-		});
+
+			// This will reconnect the socket if the user decides to stay.
+			setTimeout(function() {
+				socket.socket.connect();
+			}, 1);
+
+			return 'Are you sure you want to leave the game?';
+		}
+	});
+
+	// A user must be deleted.
+	socket.on('user::delete', function(name) {
+		if (__DEBUG__) {
+			console.debug('User::Delete (' + name + ').');
+		}
+
+		// Tell the player that a player left.
+		update_log(name === user_data.username ? '<li style="color: orange;">You left.</li>' : '<li>' + name + ' left.</li>');
+
+		// Update the leaderboard data.
+		for (var iter = 0; iter < leaderboardData.length; iter++) {
+			if (leaderboardData[iter].username === name) {
+				leaderboardData.splice(iter, 1);
+				break;
+			}
+		}
+
+		// Update the leaderboard.
+		make_leaderboard();
+	});
+
+	// A chat message must be presented.
+	socket.on('user::chat', function(name, message) {
+		// Tell the player the message and the author.
+		update_log(user_data.username === name ? '<li style="color: orange;"><i>You: ' + message + '</i></li>' : '<li><i>' + name + ': ' + message + '</i></li>');
+	});
+
+	// The leaderboard must be initialized.
+	socket.on('leaderboard::get', function(data) {
+		// Push new data to the leaderboard.
+		var keys = Object.keys(data);
+		for (var iter = 0; iter < keys.length; iter++) {
+			data[keys[iter]].username = keys[iter];
+			data[keys[iter]].is_self = (user_data.username === keys[iter]);
+			data[keys[iter]].kills = data[keys[iter]].kills;
+			data[keys[iter]].deaths = data[keys[iter]].deaths;
+			leaderboardData.push(data[keys[iter]]);
+		}
+
+		// Update the leaderboard.
+		make_leaderboard();
 	});
 })();
