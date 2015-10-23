@@ -1,4 +1,4 @@
-# Invisiball [![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball)
+# Invisiball [![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball) [![Issue Status](https://img.shields.io/github/issues/Invisiball/Invisiball.svg)](https://github.com/Invisiball/Invisiball/issues)
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Play
@@ -34,3 +34,9 @@ Instructions and tutorials will be added eventually.
 + [ ] Build a better game UI (like if player does not move for a certain amount of time, a tutorial pops up).
 + [ ] Target mobile.
 + [ ] Multiple servers (user's choice).
+
+## License
+[![License Status](https://img.shields.io/github/license/Invisiball/Invisiball.svg)](https://github.com/Invisiball/Invisiball/blob/master/LICENSE)
+
+## Social
+[![Twitter Status](https://img.shields.io/twitter/url/http/invisiball.herokuapp.com.svg?style=social)]()
