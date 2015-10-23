@@ -39,4 +39,4 @@ Instructions and tutorials will be added eventually.
 [![License Status](https://img.shields.io/github/license/Invisiball/Invisiball.svg)](https://github.com/Invisiball/Invisiball/blob/master/LICENSE)
 
 ## Social
-[![Twitter Status](https://img.shields.io/twitter/url/http/invisiball.herokuapp.com.svg?style=social)]()
+[![Twitter Status](https://img.shields.io/twitter/url/http/invisiball.herokuapp.com.svg?style=social)](https://twitter.com/intent/tweet?text=Invisiball,%20the%20FPS%20with%20a%20twist!:&url=http%3A%2F%2Finvisiball.herokuapp.com)
