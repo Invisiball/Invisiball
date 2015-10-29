@@ -1,6 +1,4 @@
-# Invisiball
-[![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball)
-
+# Invisiball [![Dependency Status](https://img.shields.io/david/Invisiball/Invisiball.svg)](https://david-dm.org/Invisiball/Invisiball) [![Issue Status](https://img.shields.io/github/issues/Invisiball/Invisiball.svg)](https://github.com/Invisiball/Invisiball/issues)
 A multiplayer game using ThreeJS, CannonJS, and NodeJS + Socket.io called Invisiball.
 
 ## How To Play
@@ -15,7 +13,7 @@ Instructions and tutorials will be added eventually.
 + The server will take over `process.env.PORT` (or if not set, port 80).
 
 ## Todos
-+ [ ] Update all libaries.
++ [X] Update all libaries.
 + [ ] Fix any old or deprecated code.
 + [ ] Run engine on server side for security.
 
@@ -36,3 +34,9 @@ Instructions and tutorials will be added eventually.
 + [ ] Build a better game UI (like if player does not move for a certain amount of time, a tutorial pops up).
 + [ ] Target mobile.
 + [ ] Multiple servers (user's choice).
+
+## License
+[![License Status](https://img.shields.io/github/license/Invisiball/Invisiball.svg)](https://github.com/Invisiball/Invisiball/blob/master/LICENSE)
+
+## Social
+[![Twitter Status](https://img.shields.io/twitter/url/http/invisiball.herokuapp.com.svg?style=social)](https://twitter.com/intent/tweet?text=Invisiball,%20the%20FPS%20with%20a%20twist!:&url=http%3A%2F%2Finvisiball.herokuapp.com)
