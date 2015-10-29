@@ -14,6 +14,7 @@ Instructions and tutorials will be added eventually.
 
 ## Todos
 + [X] Update all libaries.
++ [ ] Switch to Mongoose.
 + [ ] Fix any old or deprecated code.
 + [ ] Run engine on server side for security.
 
