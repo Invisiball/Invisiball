@@ -1,4 +1,4 @@
-(function(){
+//(function(){
 	/**
 	 * Returns a random number between and including min and max.
 	 * @param min Minimum number to return.
@@ -253,7 +253,7 @@
 	 */
 	function init() {
 		// Make loader.
-		loader = new THREE.JSONLoader(__DEBUG__);
+		loader = new THREE.JSONLoader();
 
 		// Set physics gravity.
 		world.gravity.set(0, -30, 0);
@@ -424,7 +424,7 @@
 
 		// Create renderer.
 		renderer = new THREE.WebGLRenderer();
-		renderer.shadowMapEnabled = true;
+		renderer.shadowMap.enabled = true;
 		renderer.shadowMapSoft = true;
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setClearColor(scene.fog.color, 1);
@@ -462,7 +462,7 @@
 				}
 
 				// Remove the ball from the physics world and the scene.
-				world.remove(balls[i][0]);
+				world.removeBody(balls[i][0]);
 				scene.remove(ballMeshes[i]);
 
 				// Remove the ball from ball data.
@@ -492,7 +492,6 @@
 	var ballGeometry = new THREE.SphereGeometry(ballShape.radius);
 	var shootDirection = new THREE.Vector3();
 	var shootVelo = 20;
-	var projector = new THREE.Projector();
 
 	/**
 	 * Get shot direction.
@@ -501,7 +500,7 @@
 	function getShootDir(targetVec) {
 		var vector = targetVec;
 		targetVec.set(0, 0, 1);
-		projector.unprojectVector(vector, camera);
+		vector.unproject(camera);
 		var ray = new THREE.Ray(sphereBody.position, vector.sub(sphereBody.position).normalize());
 		targetVec.x = ray.direction.x;
 		targetVec.y = ray.direction.y;
@@ -838,4 +837,4 @@
 		// Update the leaderboard.
 		make_leaderboard();
 	});
-})();
+//})();

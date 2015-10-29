@@ -25,7 +25,7 @@
 
 //========== VARS ==========
 
-var rooms = Object.create(null);
+var rooms = {};
 
 //========== MODULES ==========
 
@@ -64,6 +64,10 @@ var sendMail = require('./lib/apps/mail')(config.email);
 
 var httpServer = require('./lib/server')(config, db, app, express, session, cookieParser, passport);
 
+//========== START SOCKET.IO ==========
+
+var io = require('./lib/apps/socket')(db, httpServer, rooms, cookieParser);
+
 //========== START AUTH SETUP ==========
 
 require('./lib/auths/google')(config, db, app, passport);
@@ -76,10 +80,6 @@ require('./lib/routes/index')(config, db, app, io, rooms, swig);
 require('./lib/routes/me')(config, db, app, rooms, swig);
 require('./lib/routes/game')(config, app, io, rooms, swig);
 require('./lib/routes/system')(config, app);
-
-//========== START SOCKET.IO ==========
-
-var io = require('./lib/apps/socket')(db, httpServer, rooms, cookieParser);
 
 //========== START PROCESS EVENTS ==========
 
