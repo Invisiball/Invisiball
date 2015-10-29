@@ -291,10 +291,12 @@
 
 		// Add collision for balls and player.
 		sphereBody.addEventListener('collide', function(e) {
-			if (e.contact.bi.type === CANNON.Shape.types.SPHERE && (e.contact.bi.userData && e.contact.bi.userData.name !== user_data.username) && Date.now() - lastTimeKilled > 500) {
+			console.log('collide!', e);
+
+			if (e.body.type === CANNON.Shape.types.SPHERE && (e.body.userData && e.body.userData.name !== user_data.username) && Date.now() - lastTimeKilled > 500) {
 				sphereBody.position.set(RandomNumber(5, 100), 10, RandomNumber(5, 100));
 
-				socket.emit('score::add', e.contact.bi.userData.name);
+				socket.emit('score::add', e.body.userData.name);
 
 				if (toggle.allowsSound) {
 					$('audio')[0].play();
